@@ -1,5 +1,10 @@
-project(gridtools-verification CXX C)
 cmake_minimum_required(VERSION 3.3)
+# set the installation prefix
+# Note: setting this *before* the project imposes a default that the user is
+# able to change.
+SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install/" CACHE PATH "installation prefix")
+
+project(gridtools-verification CXX C)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
@@ -64,5 +69,6 @@ file(GLOB_RECURSE GT_VERIFICATION_SOURCES "src/*.cpp")
 add_library( gt_verification ${GT_VERIFICATION_SOURCES} )
 add_dependencies( gt_verification googletest serialbox )
 target_link_libraries( gt_verification ${Boost_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
+install( TARGETS gt_verification DESTINATION "lib" )
 
 #add_subdirectory(unittest)
