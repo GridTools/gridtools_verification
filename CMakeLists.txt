@@ -6,6 +6,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 include(ExternalProject)
 
 #---------------------------------------- CMake options --------------------------------------------
+
 # C++11 compiler support
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -27,11 +28,6 @@ if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "Setting build type to 'Release' as none was specified")
 endif(NOT CMAKE_BUILD_TYPE)
 
-# GTest has to use their own TR1 tupples on Mac OSX when compiling with Clang or ICC
-if(APPLE AND NOT(CMAKE_CXX_COMPILER_ID MATCHES "GNU"))
-    add_definitions(-DGTEST_USE_OWN_TR1_TUPLE)
-endif()
-
 # Adjust compile flags for Debug builds
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DDEBUG)
@@ -46,6 +42,10 @@ endif(NOT(${Boost_FOUND}))
 
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
+
+#---------------------------------------- build bundled libs ------------------------------------------------
+add_subdirectory( libs )
+include_directories(${GTEST_INCLUDE_DIRS})
 
 #---------------------------------------- Serialbox ------------------------------------------------
 # If SERIALBOX_ROOT was not manually provided, we will search in external/serialbox for Serialbox 
@@ -70,15 +70,12 @@ file(GLOB_RECURSE GT_VERIFICATION_UNITTEST_HEADERS
      ${CMAKE_CURRENT_SOURCE_DIR}/unittest
      ${CMAKE_CURRENT_SOURCE_DIR}/unittest/*.h)
 
-# TODO find_gtest!
-include_directories(SYSTEM ${GTEST_ROOT} )
-
-
 # build verification framework
 include_directories( src )
 file(GLOB_RECURSE GT_VERIFICATION_SOURCES "src/*.cpp")
 
 add_library( gt_verification ${GT_VERIFICATION_SOURCES} )
-target_link_libraries( gt_verification ${Boost_LIBRARIES} )
+add_dependencies( gt_verification googletest )
+target_link_libraries( gt_verification ${Boost_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
 
 #add_subdirectory(unittest)
