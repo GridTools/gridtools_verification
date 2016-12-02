@@ -5,8 +5,7 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 include(ExternalProject)
 
-#---------------------------------------- CMake options --------------------------------------------
-
+#----------------- CMake options
 # C++11 compiler support
 include(CheckCXXCompilerFlag)
 CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
@@ -33,7 +32,7 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DDEBUG)
 endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
-#---------------------------------------- Boost ----------------------------------------------------
+#----------------- Boost
 find_package(Boost 1.58 COMPONENTS system program_options REQUIRED)
 
 if(NOT(${Boost_FOUND}))
@@ -43,25 +42,13 @@ endif(NOT(${Boost_FOUND}))
 include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-#---------------------------------------- build bundled libs ------------------------------------------------
+#----------------- build bundled libs
 add_subdirectory( libs )
 include_directories(${GTEST_INCLUDE_DIRS})
+include_directories(${SERIALBOX_INCLUDE_DIRS})
 
-#---------------------------------------- Serialbox ------------------------------------------------
-# If SERIALBOX_ROOT was not manually provided, we will search in external/serialbox for Serialbox 
-# (we check if there is a CMakeLists.txt).
-set(SERIALBOX_ROOT_ENV "$ENV{SERIALBOX_ROOT}")
-if(NOT(SERIALBOX_ROOT) AND NOT(SERIALBOX_ROOT_ENV) AND 
-   EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/../serialbox/CMakeLists.txt")
-    # Set the include directory
-    set(SERIALBOX_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/serialbox/include")
-else()
-    find_package(Serialbox QUIET REQUIRED)
-endif()
 
-include_directories(SYSTEM ${SERIALBOX_INCLUDE_DIRS})
-
-# Glob the headers (for IDEs)
+#----------------- Glob the headers (for IDEs)
 file(GLOB_RECURSE GT_VERIFICATION_HEADERS 
      ${CMAKE_CURRENT_SOURCE_DIR}/src
      ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h)
@@ -70,12 +57,12 @@ file(GLOB_RECURSE GT_VERIFICATION_UNITTEST_HEADERS
      ${CMAKE_CURRENT_SOURCE_DIR}/unittest
      ${CMAKE_CURRENT_SOURCE_DIR}/unittest/*.h)
 
-# build verification framework
+#----------------- build verification framework
 include_directories( src )
 file(GLOB_RECURSE GT_VERIFICATION_SOURCES "src/*.cpp")
 
 add_library( gt_verification ${GT_VERIFICATION_SOURCES} )
-add_dependencies( gt_verification googletest )
+add_dependencies( gt_verification googletest serialbox )
 target_link_libraries( gt_verification ${Boost_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
 
 #add_subdirectory(unittest)
