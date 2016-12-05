@@ -35,7 +35,7 @@
 */
 #include "BenchmarkReporter.h"
 #include "../VerificationException.h"
-#include <Core.h>
+#include "../Core.h"
 #include <algorithm>
 #include <cmath>
 #include <fstream>
@@ -53,194 +53,178 @@
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
-BenchmarkReporter::BenchmarkReporter(
-    std::string name, BenchmarkSpecification benchmarkSpecification)
+BenchmarkReporter::BenchmarkReporter(std::string name, BenchmarkSpecification benchmarkSpecification)
     : name_(name), benchmarkSpecification_(benchmarkSpecification) {
-  measurements_.reserve(benchmarkSpecification_.repetitions());
+    measurements_.reserve(benchmarkSpecification_.repetitions());
 }
 
 void BenchmarkReporter::report() {
-  if (measurements_.empty())
-    throw VerificationException(
-        "BenchmarkReporter of '%s': no measurements found", name_);
+    if (measurements_.empty())
+        throw VerificationException("BenchmarkReporter of '%s': no measurements found", name_);
 
-  // Extract bechmark and stencil name
-  auto benchmarkDotStencil = tokenizeString(name_, ".");
+    // Extract bechmark and stencil name
+    auto benchmarkDotStencil = tokenizeString(name_, ".");
 
-  if (benchmarkDotStencil.size() != 2)
-    throw VerificationException(
-        "invalid benchmark name, expected 'Benchmark.Stencil'");
+    if (benchmarkDotStencil.size() != 2)
+        throw VerificationException("invalid benchmark name, expected 'Benchmark.Stencil'");
 
-  std::string benchmarkName = benchmarkDotStencil[0];
-  std::string stencilName = benchmarkDotStencil[1];
+    std::string benchmarkName = benchmarkDotStencil[0];
+    std::string stencilName = benchmarkDotStencil[1];
 
-  // Compute median
-  std::sort(measurements_.begin(), measurements_.end());
-  std::size_t n = measurements_.size();
-  double medianRuntime =
-      n % 2 == 0 ? 0.5 * (measurements_[n / 2 + 1] + measurements_[n / 2])
-                 : measurements_[n / 2];
-  (void)medianRuntime;
+    // Compute median
+    std::sort(measurements_.begin(), measurements_.end());
+    std::size_t n = measurements_.size();
+    double medianRuntime = n % 2 == 0 ? 0.5 * (measurements_[n / 2 + 1] + measurements_[n / 2]) : measurements_[n / 2];
+    (void)medianRuntime;
 
-  // Compute mean
-  double meanRuntime =
-      std::accumulate(measurements_.begin(), measurements_.end(), 0.0) / n;
+    // Compute mean
+    double meanRuntime = std::accumulate(measurements_.begin(), measurements_.end(), 0.0) / n;
 
-  // Compute standard deviation
-  std::vector<double> diff(measurements_.size());
-  std::transform(
-      measurements_.begin(), measurements_.end(), diff.begin(),
-      [meanRuntime](double x) -> double { return (x - meanRuntime); });
-  double squaredSum =
-      std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
-  double stdevRuntime = std::sqrt(squaredSum / n);
+    // Compute standard deviation
+    std::vector< double > diff(measurements_.size());
+    std::transform(measurements_.begin(),
+        measurements_.end(),
+        diff.begin(),
+        [meanRuntime](double x) -> double { return (x - meanRuntime); });
+    double squaredSum = std::inner_product(diff.begin(), diff.end(), diff.begin(), 0.0);
+    double stdevRuntime = std::sqrt(squaredSum / n);
 
-  // Stringify domain
-  std::string domain(std::to_string(benchmarkSpecification_.iSize()) + " " +
-                     std::to_string(benchmarkSpecification_.jSize()) + " " +
-                     std::to_string(benchmarkSpecification_.kSize()));
+    // Stringify domain
+    std::string domain(std::to_string(benchmarkSpecification_.iSize()) + " " +
+                       std::to_string(benchmarkSpecification_.jSize()) + " " +
+                       std::to_string(benchmarkSpecification_.kSize()));
 
-  // Report to stdout
-  if (!benchmarkSpecification_.quiet())
-    std::printf("  %-23s     %18.10f   +/- %15.10f [s]\n", stencilName.c_str(),
-                meanRuntime, stdevRuntime);
+    // Report to stdout
+    if (!benchmarkSpecification_.quiet())
+        std::printf("  %-23s     %18.10f   +/- %15.10f [s]\n", stencilName.c_str(), meanRuntime, stdevRuntime);
 
-  // Report to file?
-  std::string fileName(benchmarkSpecification_.file());
-  if (fileName.empty()) return;
+    // Report to file?
+    std::string fileName(benchmarkSpecification_.file());
+    if (fileName.empty())
+        return;
 
-  // Append to old benchmark?
-  JSONNode root(JSON_NODE);
-  try {
-    std::string fileContent;
+    // Append to old benchmark?
+    JSONNode root(JSON_NODE);
+    try {
+        std::string fileContent;
 
-    std::ifstream fin(fileName);
-    if (fin.good()) {
-      VERIFICATION_LOG() << "Opening file: '" << fileName << "'"
-                         << logger::endl;
-      fileContent.insert(fileContent.begin(),
-                         std::istreambuf_iterator<char>(fin),
-                         std::istreambuf_iterator<char>());
+        std::ifstream fin(fileName);
+        if (fin.good()) {
+            VERIFICATION_LOG() << "Opening file: '" << fileName << "'" << logger::endl;
+            fileContent.insert(
+                fileContent.begin(), std::istreambuf_iterator< char >(fin), std::istreambuf_iterator< char >());
 
-      // Load JSON from file
-      if (!fileContent.empty() && (benchmarkSpecification_.fileMode() !=
-                                   BenchmarkSpecification::ENew)) {
-        VERIFICATION_LOG() << "Parsing JSON of file: '" << fileName << "'"
-                           << logger::endl;
-        root = libjson::parse(fileContent);
-      }
-    }
-    fin.close();
-  } catch (std::invalid_argument& ia) {
-    Error::fatal("libJSON parsing error");
-  }
-
-  // Update the JSON file
-  bool insertedDomain = false;
-  JSONNode::iterator benchmarkIterator = root.begin();
-  while (benchmarkIterator != root.end()) {
-    // Benchmark is present?
-    if (benchmarkIterator->name() == benchmarkName) {
-      VERIFICATION_LOG() << "Found already existing benchmark '"
-                         << benchmarkName << "'" << logger::endl;
-
-      // Stencil is present?
-      JSONNode::iterator stencilIterator = benchmarkIterator->begin();
-      while (stencilIterator != benchmarkIterator->end()) {
-        if (stencilIterator->name() == stencilName) {
-          VERIFICATION_LOG() << "Found already existing stencil '"
-                             << stencilName << "'" << logger::endl;
-
-          JSONNode::iterator domainIterator = stencilIterator->begin();
-
-          // Append time to existing domain
-          while (domainIterator != stencilIterator->end()) {
-            if (domainIterator->name() == domain) {
-              VERIFICATION_LOG() << "Extending domain '" << domain
-                                 << "' of stencil '" << stencilName << "'"
-                                 << logger::endl;
-
-              insertedDomain = true;
-              domainIterator->push_back(JSONNode("", meanRuntime));
+            // Load JSON from file
+            if (!fileContent.empty() && (benchmarkSpecification_.fileMode() != BenchmarkSpecification::ENew)) {
+                VERIFICATION_LOG() << "Parsing JSON of file: '" << fileName << "'" << logger::endl;
+                root = libjson::parse(fileContent);
             }
-            ++domainIterator;
-          }
+        }
+        fin.close();
+    } catch (std::invalid_argument &ia) {
+        Error::fatal("libJSON parsing error");
+    }
 
-          // Insert new domain
-          if (!insertedDomain) {
-            VERIFICATION_LOG() << "Inserting domain '" << domain
-                               << "' into stencil '" << stencilName << "'"
+    // Update the JSON file
+    bool insertedDomain = false;
+    JSONNode::iterator benchmarkIterator = root.begin();
+    while (benchmarkIterator != root.end()) {
+        // Benchmark is present?
+        if (benchmarkIterator->name() == benchmarkName) {
+            VERIFICATION_LOG() << "Found already existing benchmark '" << benchmarkName << "'" << logger::endl;
+
+            // Stencil is present?
+            JSONNode::iterator stencilIterator = benchmarkIterator->begin();
+            while (stencilIterator != benchmarkIterator->end()) {
+                if (stencilIterator->name() == stencilName) {
+                    VERIFICATION_LOG() << "Found already existing stencil '" << stencilName << "'" << logger::endl;
+
+                    JSONNode::iterator domainIterator = stencilIterator->begin();
+
+                    // Append time to existing domain
+                    while (domainIterator != stencilIterator->end()) {
+                        if (domainIterator->name() == domain) {
+                            VERIFICATION_LOG() << "Extending domain '" << domain << "' of stencil '" << stencilName
+                                               << "'" << logger::endl;
+
+                            insertedDomain = true;
+                            domainIterator->push_back(JSONNode("", meanRuntime));
+                        }
+                        ++domainIterator;
+                    }
+
+                    // Insert new domain
+                    if (!insertedDomain) {
+                        VERIFICATION_LOG() << "Inserting domain '" << domain << "' into stencil '" << stencilName << "'"
+                                           << logger::endl;
+
+                        insertedDomain = true;
+                        JSONNode domainNode(JSON_ARRAY);
+                        domainNode.set_name(domain);
+                        domainNode.push_back(JSONNode("", meanRuntime));
+                        stencilIterator->push_back(domainNode);
+                    }
+                    break;
+                }
+                ++stencilIterator;
+            }
+
+            if (insertedDomain)
+                break;
+
+            // Insert new stencil
+            insertedDomain = true;
+            JSONNode stencil(JSON_NODE);
+            stencil.set_name(stencilName);
+
+            VERIFICATION_LOG() << "Inserting node '" << domain << "' into stencil '" << stencilName << "'"
                                << logger::endl;
 
-            insertedDomain = true;
             JSONNode domainNode(JSON_ARRAY);
             domainNode.set_name(domain);
             domainNode.push_back(JSONNode("", meanRuntime));
-            stencilIterator->push_back(domainNode);
-          }
-          break;
+            stencil.push_back(domainNode);
+
+            VERIFICATION_LOG() << "Inserting stencil '" << stencilName << "' into benchmark '" << benchmarkName << "'"
+                               << logger::endl;
+
+            benchmarkIterator->push_back(stencil);
         }
-        ++stencilIterator;
-      }
-
-      if (insertedDomain) break;
-
-      // Insert new stencil
-      insertedDomain = true;
-      JSONNode stencil(JSON_NODE);
-      stencil.set_name(stencilName);
-
-      VERIFICATION_LOG() << "Inserting node '" << domain << "' into stencil '"
-                         << stencilName << "'" << logger::endl;
-
-      JSONNode domainNode(JSON_ARRAY);
-      domainNode.set_name(domain);
-      domainNode.push_back(JSONNode("", meanRuntime));
-      stencil.push_back(domainNode);
-
-      VERIFICATION_LOG() << "Inserting stencil '" << stencilName
-                         << "' into benchmark '" << benchmarkName << "'"
-                         << logger::endl;
-
-      benchmarkIterator->push_back(stencil);
+        ++benchmarkIterator;
     }
-    ++benchmarkIterator;
-  }
 
-  // Create new benchmark
-  if (!insertedDomain) {
-    JSONNode benchmark(JSON_NODE);
-    benchmark.set_name(benchmarkName);
+    // Create new benchmark
+    if (!insertedDomain) {
+        JSONNode benchmark(JSON_NODE);
+        benchmark.set_name(benchmarkName);
 
-    JSONNode stencil(JSON_NODE);
-    stencil.set_name(stencilName);
+        JSONNode stencil(JSON_NODE);
+        stencil.set_name(stencilName);
 
-    // Insert domain into stencil
-    VERIFICATION_LOG() << "Inserting node '" << domain << "' into stencil '"
-                       << stencilName << "'" << logger::endl;
+        // Insert domain into stencil
+        VERIFICATION_LOG() << "Inserting node '" << domain << "' into stencil '" << stencilName << "'" << logger::endl;
 
-    JSONNode domainNode(JSON_ARRAY);
-    domainNode.set_name(domain);
-    domainNode.push_back(JSONNode("", meanRuntime));
-    stencil.push_back(domainNode);
+        JSONNode domainNode(JSON_ARRAY);
+        domainNode.set_name(domain);
+        domainNode.push_back(JSONNode("", meanRuntime));
+        stencil.push_back(domainNode);
 
-    // Insert stencil into benchmark
-    VERIFICATION_LOG() << "Inserting stencil '" << stencilName
-                       << "' into benchmark '" << benchmarkName << "'"
-                       << logger::endl;
+        // Insert stencil into benchmark
+        VERIFICATION_LOG() << "Inserting stencil '" << stencilName << "' into benchmark '" << benchmarkName << "'"
+                           << logger::endl;
 
-    benchmark.push_back(stencil);
+        benchmark.push_back(stencil);
 
-    // Insert benchmark into root
-    root.push_back(benchmark);
-  }
+        // Insert benchmark into root
+        root.push_back(benchmark);
+    }
 
-  // Write to file
-  std::ofstream fout;
-  fout.open(fileName, std::ofstream::out | std::ofstream::trunc);
-  VERIFICATION_LOG() << "Writing to file: '" << fileName << "'" << logger::endl;
-  fout << root.write_formatted() << std::endl;
-  fout.close();
+    // Write to file
+    std::ofstream fout;
+    fout.open(fileName, std::ofstream::out | std::ofstream::trunc);
+    VERIFICATION_LOG() << "Writing to file: '" << fileName << "'" << logger::endl;
+    fout << root.write_formatted() << std::endl;
+    fout.close();
 }
 
 GT_VERIFICATION_NAMESPACE_END

@@ -37,7 +37,7 @@
 
 #include <vector>
 #include <string>
-#include "Common.h"
+#include "../Common.h"
 #include "Verification.h"
 #include "core/CommandLine.h"
 

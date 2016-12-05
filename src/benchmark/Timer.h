@@ -35,7 +35,7 @@
 */
 #pragma once
 
-#include "Common.h"
+#include "../Common.h"
 
 #ifdef DYCORE_USE_GPU
 #include <stencil-composition/backend_cuda/timer_cuda.hpp>

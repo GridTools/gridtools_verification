@@ -37,7 +37,7 @@
 
 #include <gtest/gtest.h>
 #include <string>
-#include "Common.h"
+#include "../Common.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 

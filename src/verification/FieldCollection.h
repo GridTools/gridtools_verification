@@ -37,13 +37,13 @@
 
 #include "VerificationSpecification.h"
 #include <vector>
+#include "../Common.h"
 #include "../core/TypeErasedField.h"
 #include "../core/Serialization.h"
 #include "ErrorMetric.h"
 #include "BoundaryExtent.h"
 #include "Verification.h"
 #include "VerificationResult.h"
-#include "Common.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 

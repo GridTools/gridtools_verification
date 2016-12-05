@@ -35,10 +35,10 @@
 */
 #pragma once
 
-#include <Core.h>
 #include <vector>
-#include "Common.h"
-#include "benchmark/BenchmarkSpecification.h"
+#include "../Core.h"
+#include "../Common.h"
+#include "BenchmarkSpecification.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 

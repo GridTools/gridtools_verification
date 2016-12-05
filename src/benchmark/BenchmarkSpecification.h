@@ -36,7 +36,7 @@
 #pragma once
 
 #include "../Core.h"
-#include "Common.h"
+#include "../Common.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 

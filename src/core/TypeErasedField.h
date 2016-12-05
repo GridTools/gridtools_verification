@@ -39,7 +39,7 @@
 #include <utility>
 #include <memory>
 #include <boost/mpl/bool.hpp>
-#include "Common.h"
+#include "../Common.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 

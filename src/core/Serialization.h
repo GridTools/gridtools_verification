@@ -38,7 +38,7 @@
 #include <Serialbox/Savepoint.h>
 #include <Serialbox/Serializer.h>
 #include <Serialbox/SerializationException.h>
-#include "Common.h"
+#include "../Common.h"
 #include "CommandLine.h"
 #include "TypeErasedField.h"
 

@@ -33,8 +33,8 @@
 
   For information: http://eth-cscs.github.io/gridtools/
 */
-#include "../VerificationException.h"
 #include <initializer_list>
+#include "../VerificationException.h"
 #include "../Core.h"
 #include "BenchmarkSpecification.h"
 

@@ -37,7 +37,7 @@
 
 #include <string>
 #include <vector>
-#include "Common.h"
+#include "../Common.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
