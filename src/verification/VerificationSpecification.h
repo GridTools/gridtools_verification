@@ -38,8 +38,8 @@
 #include <vector>
 #include <string>
 #include "../Common.h"
+#include "../core/CommandLine.h"
 #include "Verification.h"
-#include "core/CommandLine.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
