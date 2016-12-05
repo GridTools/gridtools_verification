@@ -53,13 +53,11 @@ GT_VERIFICATION_NAMESPACE_BEGIN
  *
  * @ingroup DycoreUnittestVerificationLibrary
  */
+template < typename T >
 class error_metric {
   public:
     error_metric(const error_metric &) = default;
     error_metric &operator=(const error_metric &) = default;
-
-    static Real rtolDefault; /**< Relative tolerance */
-    static Real atolDefault; /**< Absolute tolerance */
 
     /**
      * @brief Initialize the ErrorMetric with the relative and absolute tolerance
@@ -67,18 +65,18 @@ class error_metric {
      * @param rtol  Relative tolerance
      * @param atol  Absolute tolerance
      */
-    error_metric(Real rtol = rtolDefault, Real atol = atolDefault) : rtol_(rtol), atol_(atol) {}
+    error_metric(T rtol, T atol) : rtol_(rtol), atol_(atol) {}
 
     /**
      * @brief Check if two real numbers @c a and @c b are equal within a tolerance
      *
      * @return true iff absolute(a - b) <= (atol + rtol * absolute(b))
      */
-    inline bool equal(Real a, Real b) const noexcept { return (std::fabs(a - b) <= (atol_ + rtol_ * std::fabs(b))); }
+    inline bool equal(T a, T b) const noexcept { return (std::fabs(a - b) <= (atol_ + rtol_ * std::fabs(b))); }
 
   private:
-    Real rtol_;
-    Real atol_;
+    T rtol_;
+    T atol_;
 };
 
 GT_VERIFICATION_NAMESPACE_END

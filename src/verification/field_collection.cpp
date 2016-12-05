@@ -101,7 +101,7 @@ void field_collection::load_iteration(int iteration) {
     }
 }
 
-verification_result field_collection::verify(std::shared_ptr< error_metric > errorMetric) {
+verification_result field_collection::verify(error_metric< Real > errorMetric) {
     verifications_.clear();
 
     verification_result totalResult(true, "\n");

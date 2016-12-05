@@ -84,7 +84,7 @@ class verification {
      */
     verification(type_erased_field_view outputField,
         type_erased_field_view refrenceField,
-        std::shared_ptr< error_metric > errorMetric,
+        error_metric< Real > errorMetric,
         boundary_extent boundary = boundary_extent())
         : outputField_(outputField), referenceField_(refrenceField), errorMetric_(errorMetric), boundary_(boundary) {}
 
@@ -139,7 +139,7 @@ class verification {
   private:
     type_erased_field_view outputField_;
     type_erased_field_view referenceField_;
-    std::shared_ptr< error_metric > errorMetric_;
+    error_metric< Real > errorMetric_;
     boundary_extent boundary_;
 
     std::vector< failure > failures_;

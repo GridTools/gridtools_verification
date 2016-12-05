@@ -94,14 +94,17 @@ void verification_specification::print_help(char *currentExecutable) noexcept {
         " <X> and <Y> are two integers seperated by '-' in the range "
         "[0, kmax]. If <Y> is omitted then only the layer <X> is being"
         " reported. Example: k=5-10 or k=20.");
-    printKeyword("atol",
-        "<float>",
-        (boost::format("Set the absolute tolerance of the error metric (default: %.0e).") % error_metric::atolDefault)
-            .str());
-    printKeyword("rtol",
-        "<float>",
-        (boost::format("Set the relative tolerance of the error metric (default: %.0e).") % error_metric::rtolDefault)
-            .str());
+    // TODO recover
+    //    printKeyword("atol",
+    //        "<float>",
+    //        (boost::format("Set the absolute tolerance of the error metric (default: %.0e).") %
+    //        error_metric::atolDefault)
+    //            .str());
+    //    printKeyword("rtol",
+    //        "<float>",
+    //        (boost::format("Set the relative tolerance of the error metric (default: %.0e).") %
+    //        error_metric::rtolDefault)
+    //            .str());
 
     // Print example
     std::cout << "\nExample: --error=visualize,k=1-5,k=6" << std::endl;
@@ -179,24 +182,26 @@ void verification_specification::parse(std::string errorStr) {
                     VERIFICATION_LOG() << "VerificationReporter: Parsing keyword 'max-errors' as " << maxErrorsToList_
                                        << logger_action::endl;
                 }
-                // atol
-                else if (keywordStr == "atol") {
-                    if (valueStr.empty())
-                        throw verification_exception(
-                            "parsing error in '--error': missing argument of keyword '%s'", keywordStr);
-                    error_metric::atolDefault = std::atof(valueStr.c_str());
-                    VERIFICATION_LOG() << "VerificationReporter: Parsing keyword 'atol' as "
-                                       << error_metric::atolDefault << logger_action::endl;
-                }
-                // rtol
-                else if (keywordStr == "rtol") {
-                    if (valueStr.empty())
-                        throw verification_exception(
-                            "parsing error in '--error': missing argument of keyword '%s'", keywordStr);
-                    error_metric::rtolDefault = std::atof(valueStr.c_str());
-                    VERIFICATION_LOG() << "VerificationReporter: Parsing keyword 'rtol' as "
-                                       << error_metric::rtolDefault << logger_action::endl;
-                }
+                //                // atol
+                //                else if (keywordStr == "atol") {
+                //                    if (valueStr.empty())
+                //                        throw verification_exception(
+                //                            "parsing error in '--error': missing argument of keyword '%s'",
+                //                            keywordStr);
+                //                    error_metric::atolDefault = std::atof(valueStr.c_str());
+                //                    VERIFICATION_LOG() << "VerificationReporter: Parsing keyword 'atol' as "
+                //                                       << error_metric::atolDefault << logger_action::endl;
+                //                }
+                //                // rtol
+                //                else if (keywordStr == "rtol") {
+                //                    if (valueStr.empty())
+                //                        throw verification_exception(
+                //                            "parsing error in '--error': missing argument of keyword '%s'",
+                //                            keywordStr);
+                //                    error_metric::rtolDefault = std::atof(valueStr.c_str());
+                //                    VERIFICATION_LOG() << "VerificationReporter: Parsing keyword 'rtol' as "
+                //                                       << error_metric::rtolDefault << logger_action::endl;
+                //                }
                 // k
                 else if (keywordStr == "k") {
                     if (valueStr.empty())

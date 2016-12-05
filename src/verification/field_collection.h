@@ -141,7 +141,7 @@ class field_collection {
      *
      * @return VerificationResult
      */
-    verification_result verify(std::shared_ptr< error_metric > errorMetric);
+    verification_result verify(error_metric< Real > errorMetric);
 
     /**
      * @brief Report failures depending on values set in VerificationReporter

@@ -74,7 +74,7 @@ verification_result verification::verify() noexcept {
     for (int k = boundary_.k_minus(); k < (kSizeOut + boundary_.k_plus()); ++k)
         for (int j = boundary_.j_minus(); j < (jSizeOut + boundary_.j_plus()); ++j)
             for (int i = boundary_.i_minus(); i < (iSizeOut + boundary_.i_plus()); ++i)
-                if (!errorMetric_->equal(outputField_(i, j, k), referenceField_(i, j, k)))
+                if (!errorMetric_.equal(outputField_(i, j, k), referenceField_(i, j, k)))
                     failures_.push_back(failure{i, j, k, outputField_(i, j, k), referenceField_(i, j, k)});
 
     if (failures_.empty())
