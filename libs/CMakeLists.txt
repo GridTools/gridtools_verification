@@ -20,9 +20,9 @@ link_directories(${GTEST_INSTALL_DIR}/lib)
 
 enable_testing()
 set( GTEST_INCLUDE_DIRS "${GTEST_INSTALL_DIR}/include" PARENT_SCOPE )
-set( GTEST_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest.a ${GTEST_INSTALL_DIR}/lib/libgmock.a ${GTEST_INSTALL_DIR}/lib/libgmock-gtest.a PARENT_SCOPE )
+set( GTEST_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest.a ${GTEST_INSTALL_DIR}/lib/libgmock.a PARENT_SCOPE )
 set( GTEST_MAIN_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest_main.a ${GTEST_INSTALL_DIR}/lib/libgmock_main.a PARENT_SCOPE )
-set( GTEST_BOTH_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest.a ${GTEST_INSTALL_DIR}/lib/libgmock.a ${GTEST_INSTALL_DIR}/lib/libgmock-gtest.a ${GTEST_INSTALL_DIR}/lib/libgtest_main.a ${GTEST_INSTALL_DIR}/lib/libgmock_main.a pthread PARENT_SCOPE )
+set( GTEST_BOTH_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest.a ${GTEST_INSTALL_DIR}/lib/libgmock.a ${GTEST_INSTALL_DIR}/lib/libgtest_main.a ${GTEST_INSTALL_DIR}/lib/libgmock_main.a pthread PARENT_SCOPE )
 
 #---------------------------------------- serialbox ------------------------------------------------
 set(SERIALBOX_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
