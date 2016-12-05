@@ -1,5 +1,5 @@
 #---------------------------------------- googletest ------------------------------------------------
-set(GTEST_INSTALL_DIR "${CMAKE_BINARY_DIR}/libs/googletest/install")
+set(GTEST_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
 set(CMAKE_EXTERNAL_ARGUMENTS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} 
                              -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
@@ -25,7 +25,7 @@ set( GTEST_MAIN_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest-main.a PARENT_SCOPE 
 set( GTEST_BOTH_LIBRARIES ${GTEST_INSTALL_DIR}/lib/libgtest.a ${GTEST_INSTALL_DIR}/lib/libgtest-main.a PARENT_SCOPE )
 
 #---------------------------------------- serialbox ------------------------------------------------
-set(SERIALBOX_INSTALL_DIR "${CMAKE_BINARY_DIR}/libs/serialbox/install")
+set(SERIALBOX_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}")
 
 set(CMAKE_EXTERNAL_ARGUMENTS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} 
                              -DCMAKE_GENERATOR=${CMAKE_GENERATOR}
