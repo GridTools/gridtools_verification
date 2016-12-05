@@ -40,7 +40,7 @@
 #include "benchmark/benchmark_reporter.h"
 #include "benchmark/cache_flusher.h"
 #include "benchmark/field_initializer.h"
-#include "benchmark/Timer.h"
+#include "benchmark/timer.h"
 
 /**
  * @defgroup DycoreUnittestBenchmarkLibrary Benchmark
