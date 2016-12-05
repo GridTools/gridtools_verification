@@ -1,6 +1,12 @@
+function(add_unittest_executable name sources)
+    add_executable(${name} ${sources} ${GT_VERIFICATION_HEADERS})
+    
+    target_link_libraries(${name} 
+            gridtools_verification
+            ${GTEST_BOTH_LIBRARIES}
+        )
+endfunction(add_unittest_executable)
 
-SET( UNITTEST_VERIFICATION_SRCS ${CMAKE_CURRENT_SOURCE_DIR}/SerializationUnittest.cpp)
-add_subdirectory( benchmark )
-add_subdirectory( core )
-add_subdirectory( verification )
-add_unittest_executable( UnittestVerification "${UNITTEST_VERIFICATION_SRCS}" )
+file(GLOB_RECURSE GT_VERIFICATION_TESTS "test_*.cpp")
+
+add_unittest_executable( test_verification "${GT_VERIFICATION_TESTS}" )
