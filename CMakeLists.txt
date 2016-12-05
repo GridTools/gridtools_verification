@@ -66,12 +66,14 @@ file(GLOB_RECURSE GT_VERIFICATION_UNITTEST_HEADERS
 include_directories( src )
 file(GLOB_RECURSE GT_VERIFICATION_SOURCES "src/*.cpp")
 
-add_library( gt_verification ${GT_VERIFICATION_SOURCES} )
-add_dependencies( gt_verification googletest serialbox )
-target_link_libraries( gt_verification ${Boost_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
+add_library( gridtools_verification ${GT_VERIFICATION_SOURCES} )
+add_dependencies( gridtools_verification googletest serialbox )
+target_link_libraries( gridtools_verification ${Boost_LIBRARIES} )
+target_link_libraries( gridtools_verification ${GTEST_BOTH_LIBRARIES} ${SERIALBOX_LIBRARIES} )
 
 #----------------- install verification framework
-install( TARGETS gt_verification DESTINATION "lib" )
+install( TARGETS gridtools_verification DESTINATION "lib" EXPORT gridtools_verification )
 install( DIRECTORY src/ DESTINATION "include/gridtools_verification" FILES_MATCHING PATTERN "*.h" )
+install( EXPORT gridtools_verification DESTINATION lib/gridtools_verification )
 
 #add_subdirectory(unittest)
