@@ -129,7 +129,7 @@ class field_collection {
      */
     template < typename FieldType >
     void register_input_field(const std::string &fieldname, FieldType &field) noexcept {
-        inputFields_.push_back(std::make_pair(fieldname, type_erased_field_view(field)));
+        inputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
     }
 
     /**
@@ -146,10 +146,10 @@ class field_collection {
     void register_output_and_reference_field(
         const std::string &fieldname, FieldType &field, boundary_extent boundary = boundary_extent()) noexcept {
         boundaries_.push_back(boundary);
-        outputFields_.push_back(std::make_pair(fieldname, type_erased_field_view(field)));
+        outputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
 
         // Construct new field holding the reference data
-        referenceFields_.push_back(std::make_pair(fieldname, type_erased_field(field)));
+        referenceFields_.push_back(std::make_pair(fieldname, type_erased_field< T >(field)));
     }
 
     /**
@@ -241,9 +241,9 @@ class field_collection {
 
     std::vector< internal::savepoint_pair > iterations_;
 
-    std::vector< std::pair< std::string, type_erased_field_view > > inputFields_;
-    std::vector< std::pair< std::string, type_erased_field_view > > outputFields_;
-    std::vector< std::pair< std::string, type_erased_field > > referenceFields_;
+    std::vector< std::pair< std::string, type_erased_field_view< T > > > inputFields_;
+    std::vector< std::pair< std::string, type_erased_field_view< T > > > outputFields_;
+    std::vector< std::pair< std::string, type_erased_field< T > > > referenceFields_;
     std::vector< boundary_extent > boundaries_;
 
     verification_specification verificationSpecification_;

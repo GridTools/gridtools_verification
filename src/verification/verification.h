@@ -84,8 +84,8 @@ class verification {
      * @param errorMetric       @ref ErrorMetric "Error metric" to use.
      * @param boundary          Indentation of the output field.
      */
-    verification(type_erased_field_view outputField,
-        type_erased_field_view referenceField,
+    verification(type_erased_field_view< T > outputField,
+        type_erased_field_view< T > referenceField,
         error_metric< T > errorMetric,
         boundary_extent boundary = boundary_extent())
         : outputField_(outputField), referenceField_(referenceField), errorMetric_(errorMetric), boundary_(boundary) {}
@@ -175,16 +175,16 @@ class verification {
     /**
      * @brief Get a view to the output-field
      */
-    type_erased_field_view output_field() const noexcept { return outputField_; }
+    type_erased_field_view< T > output_field() const noexcept { return outputField_; }
 
     /**
      * @brief Get a view to the reference-field
      */
-    type_erased_field_view reference_field() const noexcept { return referenceField_; }
+    type_erased_field_view< T > reference_field() const noexcept { return referenceField_; }
 
   private:
-    type_erased_field_view outputField_;
-    type_erased_field_view referenceField_;
+    type_erased_field_view< T > outputField_;
+    type_erased_field_view< T > referenceField_;
     error_metric< T > errorMetric_;
     boundary_extent boundary_;
 

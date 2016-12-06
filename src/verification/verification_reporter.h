@@ -43,7 +43,7 @@
 #include <limits>
 #include <numeric>
 #include <boost/format.hpp>
-#include "common.h"
+#include "../common.h"
 #include "verification_specification.h"
 #include "verification.h"
 #include "../core/color.h"
@@ -97,8 +97,8 @@ class verification_reporter : private boost::noncopyable {
             return;
 
         const auto &failures = verif.failures();
-        type_erased_field_view referenceField = verif.reference_field();
-        type_erased_field_view outputField = verif.output_field();
+        type_erased_field_view< T > referenceField = verif.reference_field();
+        type_erased_field_view< T > outputField = verif.output_field();
 
         // If the interval is not specified, we will print everything. Note: this may trigger some
         // unnecessary copies but it doesn't really matter here.
