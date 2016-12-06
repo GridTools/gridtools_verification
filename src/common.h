@@ -38,12 +38,4 @@
 #define GT_VERIFICATION_NAMESPACE_BEGIN namespace gt_verification {
 #define GT_VERIFICATION_NAMESPACE_END }
 
-#ifndef GT_NO_ERRORS // FIXME hack to check if gridtools/common/def.hpp is included
-namespace gridtools {
-    namespace enumtype {
-        enum platform { Cuda, Host };
-    }
-}
-#endif
-
 #include <boost/core/noncopyable.hpp>

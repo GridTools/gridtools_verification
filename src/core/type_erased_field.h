@@ -75,9 +75,9 @@ namespace internal {
     namespace field_helper {
         template < typename FieldType, typename Enable = void >
         struct field_helper_impl {
-            static void h2d_update() {}
-            static void d2h_update() {}
-            static void set_on_device() {}
+            static void h2d_update(FieldType &field) {}
+            static void d2h_update(FieldType &field) {}
+            static void set_on_device(FieldType &field) {}
         };
 
         template < typename FieldType >
