@@ -33,6 +33,8 @@ class unittest_environment : public testing::Environment,
         error_serializer_->Init(".", "Error", ser::SerializerOpenModeWrite);
     };
 
+    static unittest_environment &get_instance();
+
     /**
      * @brief Returns the name of the current test as registered by GTest
      *
