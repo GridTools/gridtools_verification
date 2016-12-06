@@ -43,6 +43,7 @@
 #pragma once
 
 #include <vector>
+#include <boost/format.hpp>
 #include "../common.h"
 #include "../core/type_erased_field.h"
 #include "boundary_extent.h"
@@ -52,11 +53,12 @@
 GT_VERIFICATION_NAMESPACE_BEGIN
 
 /**
- * @brief Verify if an output field (produced by a stencil) and a refrence field (loaded from disk)
+ * @brief Verify if an output field (produced by a stencil) and a reference field (loaded from disk)
  * are equal within a given @ref ErrorMetric "error metric".
  *
  * @ingroup DycoreUnittestVerificationLibrary
  */
+template < typename T >
 class verification {
   public:
     /**
@@ -82,11 +84,11 @@ class verification {
      * @param errorMetric       @ref ErrorMetric "Error metric" to use.
      * @param boundary          Indentation of the output field.
      */
-    verification(type_erased_field_view outputField,
-        type_erased_field_view refrenceField,
-        std::shared_ptr< error_metric > errorMetric,
+    verification(type_erased_field_view< T > outputField,
+        type_erased_field_view< T > referenceField,
+        error_metric< T > errorMetric,
         boundary_extent boundary = boundary_extent())
-        : outputField_(outputField), referenceField_(refrenceField), errorMetric_(errorMetric), boundary_(boundary) {}
+        : outputField_(outputField), referenceField_(referenceField), errorMetric_(errorMetric), boundary_(boundary) {}
 
     /**
      * @brief Verify that outputField is equal to refrenceField within the given error metric
@@ -95,7 +97,49 @@ class verification {
      *
      * @return VerificationResult
      */
-    verification_result verify() noexcept;
+    verification_result verify() noexcept {
+        // Sync fields with Host
+        outputField_.update_host();
+        referenceField_.update_host();
+
+        failures_.clear();
+
+        std::string nameOut = outputField_.name();
+        std::string nameRef = referenceField_.name();
+
+        // Sizes *with* halo-boundaray
+        const int iSizeOut = outputField_.i_size();
+        const int jSizeOut = outputField_.j_size();
+        const int kSizeOut = outputField_.k_size();
+
+        const int iSizeRef = referenceField_.i_size();
+        const int jSizeRef = referenceField_.j_size();
+        const int kSizeRef = referenceField_.k_size();
+
+        // Check dimensions
+        if ((iSizeOut != iSizeRef) || (jSizeOut != jSizeRef) || (kSizeOut != kSizeRef))
+            return verification_result(false,
+                (boost::format("the output field '%s' has a diffrent size than the refrence "
+                               "field '%s'.\n %-15s as: (%i, %i, %i)\n %-15s as: (%i, %i, %i)") %
+                    nameOut % nameRef % nameOut % iSizeOut % jSizeOut % kSizeOut % nameRef % iSizeRef % jSizeRef %
+                    kSizeRef)
+                    .str());
+
+        // Verify fields
+        for (int k = boundary_.k_minus(); k < (kSizeOut + boundary_.k_plus()); ++k)
+            for (int j = boundary_.j_minus(); j < (jSizeOut + boundary_.j_plus()); ++j)
+                for (int i = boundary_.i_minus(); i < (iSizeOut + boundary_.i_plus()); ++i)
+                    if (!errorMetric_.equal(outputField_(i, j, k), referenceField_(i, j, k)))
+                        failures_.push_back(failure{i, j, k, outputField_(i, j, k), referenceField_(i, j, k)});
+
+        if (failures_.empty())
+            return verification_result(true, "");
+        else
+            return verification_result(false,
+                (boost::format("%5.3f %% of field entries of '%s' do not match (total of %i)") %
+                    (100 * T(failures_.size()) / outputField_.size()) % nameOut % failures_.size())
+                    .str());
+    }
 
     /**
      * @brief Return true if errors occurred
@@ -113,13 +157,13 @@ class verification {
      * @ingroup DycoreUnittestVerificationLibrary
      */
     struct failure {
-        int i;       /**< i position in the outputField */
-        int j;       /**< j position in the outputField */
-        int k;       /**< k position in the outputField */
-        Real outVal; /**< Value of the outputField */
-        Real refVal; /**< Value of the refrenceField */
+        int i;    /**< i position in the outputField */
+        int j;    /**< j position in the outputField */
+        int k;    /**< k position in the outputField */
+        T outVal; /**< Value of the outputField */
+        T refVal; /**< Value of the refrenceField */
     };
-    static_assert(std::is_pod< failure >::value, "Verifcation::Failure should be POD.");
+    static_assert(std::is_pod< failure >::value, "Verification::Failure should be POD.");
 
     /**
      * @brief Get the vector of @ref Failure "failures".
@@ -129,17 +173,17 @@ class verification {
     /**
      * @brief Get a view to the output-field
      */
-    type_erased_field_view output_field() const noexcept { return outputField_; }
+    type_erased_field_view< T > output_field() const noexcept { return outputField_; }
 
     /**
      * @brief Get a view to the reference-field
      */
-    type_erased_field_view reference_field() const noexcept { return referenceField_; }
+    type_erased_field_view< T > reference_field() const noexcept { return referenceField_; }
 
   private:
-    type_erased_field_view outputField_;
-    type_erased_field_view referenceField_;
-    std::shared_ptr< error_metric > errorMetric_;
+    type_erased_field_view< T > outputField_;
+    type_erased_field_view< T > referenceField_;
+    error_metric< T > errorMetric_;
     boundary_extent boundary_;
 
     std::vector< failure > failures_;

@@ -40,6 +40,10 @@
 #include "../common.h"
 #include "../core/type_erased_field.h"
 #include "../core/serialization.h"
+#include "../core/error.h"
+#include "../core/logger.h"
+#include "../verification_exception.h"
+#include "verification_reporter.h"
 #include "error_metric.h"
 #include "boundary_extent.h"
 #include "verification.h"
@@ -64,6 +68,7 @@ namespace internal {
  *
  * @ingroup DycoreUnittestVerificationLibrary
  */
+template < typename T >
 class field_collection {
   public:
     field_collection(verification_specification verificationSpecification)
@@ -84,7 +89,28 @@ class field_collection {
      */
     void attach_reference_serializer(std::shared_ptr< ser::Serializer > serializer,
         const std::string &inSavepointName,
-        const std::string &outSavepointName);
+        const std::string &outSavepointName) {
+        referenceSerializer_ = serializer;
+
+        const std::vector< ser::Savepoint > &savepoints = referenceSerializer_->savepoints();
+        iterations_.clear();
+
+        for (auto it = savepoints.cbegin(), end = savepoints.cend(); it != end; ++it) {
+            if (it->name() == outSavepointName) {
+                // Output savepoint is found, now search input savepoint
+                auto rit = std::reverse_iterator< decltype(it) >(it);
+                while (rit != savepoints.rend()) {
+                    if (rit->name() == inSavepointName)
+                        // Pair found, finish search
+                        break;
+                    ++rit;
+                }
+
+                if (rit != savepoints.rend())
+                    iterations_.push_back(internal::savepoint_pair(*rit, *it));
+            }
+        }
+    }
 
     /**
      * @brief Attach an error serializer to the collection which will be used to serialize the
@@ -93,7 +119,7 @@ class field_collection {
      * @param serializer  The serializer which will be used to serialization
      *                    (in SerializerOpenModeWrite)
      */
-    void attach_error_serializer(std::shared_ptr< ser::Serializer > serializer);
+    void attach_error_serializer(std::shared_ptr< ser::Serializer > serializer) { errorSerializer_ = serializer; }
 
     /**
      * @brief Register an input field which will be filled during the loadIteration() function
@@ -103,7 +129,7 @@ class field_collection {
      */
     template < typename FieldType >
     void register_input_field(const std::string &fieldname, FieldType &field) noexcept {
-        inputFields_.push_back(std::make_pair(fieldname, type_erased_field_view(field)));
+        inputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
     }
 
     /**
@@ -120,10 +146,10 @@ class field_collection {
     void register_output_and_reference_field(
         const std::string &fieldname, FieldType &field, boundary_extent boundary = boundary_extent()) noexcept {
         boundaries_.push_back(boundary);
-        outputFields_.push_back(std::make_pair(fieldname, type_erased_field_view(field)));
+        outputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
 
         // Construct new field holding the reference data
-        referenceFields_.push_back(std::make_pair(fieldname, type_erased_field(field)));
+        referenceFields_.push_back(std::make_pair(fieldname, type_erased_field< T >(field)));
     }
 
     /**
@@ -131,7 +157,32 @@ class field_collection {
      *
      * After this the computations and verification can take place.
      */
-    void load_iteration(int iteration);
+    void load_iteration(int iteration) {
+        if (iteration >= (int)iterations_.size())
+            error::fatal(boost::format("invalid access of iteration '%i' (there are only %i iterations)") % iteration %
+                         iterations_.size());
+
+        serialization serialization(referenceSerializer_);
+
+        auto inputSavepoint = iterations_[iteration].input;
+        auto refSavepoint = iterations_[iteration].output;
+
+        try {
+            // Load input fields
+            VERIFICATION_LOG() << "Loading input savepoint '" << inputSavepoint << "'" << logger_action::endl;
+
+            for (auto &inputFieldPair : inputFields_)
+                serialization.load(inputFieldPair.first, inputFieldPair.second, inputSavepoint);
+
+            // Load reference fields
+            VERIFICATION_LOG() << "Loading reference savepoint '" << refSavepoint << "'" << logger_action::endl;
+
+            for (auto &refFieldPair : referenceFields_)
+                serialization.load(refFieldPair.first, refFieldPair.second.to_view(), refSavepoint);
+        } catch (verification_exception &e) {
+            error::fatal(e.what());
+        }
+    }
 
     /**
      * @brief Verifies all output sources and collects the result
@@ -141,12 +192,32 @@ class field_collection {
      *
      * @return VerificationResult
      */
-    verification_result verify(std::shared_ptr< error_metric > errorMetric);
+    verification_result verify(error_metric< T > errorMetric) {
+        verifications_.clear();
+
+        verification_result totalResult(true, "\n");
+
+        // Iterate over output fields and compare them to the reference fields
+        for (std::size_t i = 0; i < outputFields_.size(); ++i) {
+            verifications_.emplace_back(
+                outputFields_[i].second, referenceFields_[i].second.to_view(), errorMetric, boundaries_[i]);
+
+            // Perform actual verification and merge results
+            totalResult.merge(verifications_.back().verify());
+        }
+        return totalResult;
+    }
 
     /**
      * @brief Report failures depending on values set in VerificationReporter
      */
-    void report_failures() const noexcept;
+    void report_failures() const noexcept {
+        verification_reporter verificationReporter(verificationSpecification_);
+        for (const auto &verification : verifications_)
+            if (!verification) {
+                verificationReporter.report(verification);
+            }
+    }
 
     /**
      * @brief Get the reference serializer
@@ -170,13 +241,13 @@ class field_collection {
 
     std::vector< internal::savepoint_pair > iterations_;
 
-    std::vector< std::pair< std::string, type_erased_field_view > > inputFields_;
-    std::vector< std::pair< std::string, type_erased_field_view > > outputFields_;
-    std::vector< std::pair< std::string, type_erased_field > > referenceFields_;
+    std::vector< std::pair< std::string, type_erased_field_view< T > > > inputFields_;
+    std::vector< std::pair< std::string, type_erased_field_view< T > > > outputFields_;
+    std::vector< std::pair< std::string, type_erased_field< T > > > referenceFields_;
     std::vector< boundary_extent > boundaries_;
 
     verification_specification verificationSpecification_;
-    std::vector< verification > verifications_;
+    std::vector< verification< T > > verifications_;
 };
 
 GT_VERIFICATION_NAMESPACE_END

@@ -33,21 +33,9 @@
 
   For information: http://eth-cscs.github.io/gridtools/
 */
+#pragma once
+
 #define GT_VERIFICATION_NAMESPACE_BEGIN namespace gt_verification {
 #define GT_VERIFICATION_NAMESPACE_END }
-
-// TODO if built as separate library we should compile for both precisions, i.e. Real as template
-// parameter
-#ifndef FLOAT_PRECISION
-#define FLOAT_PRECISION 8
-#endif
-
-#if FLOAT_PRECISION == 4
-using Real = float;
-#elif FLOAT_PRECISION == 8
-using Real = double;
-#else
-#error float precision not properly set (4 or 8 bytes expected)
-#endif
 
 #include <boost/core/noncopyable.hpp>

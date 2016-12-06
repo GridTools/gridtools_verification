@@ -39,28 +39,75 @@
 #include <utility>
 #include <memory>
 #include <boost/mpl/bool.hpp>
+#include <boost/type_traits.hpp>
 #include "../common.h"
+
+// FIXME forward
+namespace gridtools {
+    template < typename T, bool B >
+    struct hybrid_pointer;
+}
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
-// FIXME remove dependency on a compile-time flag
-#ifndef FLOAT_PRECISION
-#define FLOAT_PRECISION 8
-#endif
-
-#if FLOAT_PRECISION == 4
-using Real = float;
-#elif FLOAT_PRECISION == 8
-using Real = double;
-#else
-#error float precision not properly set (4 or 8 bytes expected)
-#endif
-
 namespace internal {
 
+    // FIXME should be removed with the new storage (copied from gridtools/common/pointer_metafunctions.hpp)
+    namespace {
+        template < typename T >
+        struct remove_ref_cv {
+            typedef typename boost::remove_reference< typename boost::remove_cv< T >::type >::type type;
+        };
+
+        template < typename T >
+        struct is_hybrid_pointer_impl : boost::mpl::false_ {};
+
+        template < typename T >
+        struct is_hybrid_pointer_impl< gridtools::hybrid_pointer< T, false > > : boost::mpl::true_ {};
+
+        template < typename T >
+        struct is_hybrid_pointer_impl< gridtools::hybrid_pointer< T, true > > : boost::mpl::true_ {};
+
+        template < typename T >
+        struct is_hybrid_pointer : is_hybrid_pointer_impl< typename remove_ref_cv< T >::type > {};
+
+        template < typename FieldType >
+        struct is_cuda_storage : is_hybrid_pointer< typename FieldType::super::pointer_type > {};
+    }
+
+    namespace field_helper {
+        template < typename FieldType, typename Enable = void >
+        struct field_helper_impl {
+            static void h2d_update(FieldType &field) {}
+            static void d2h_update(FieldType &field) {}
+            static void set_on_device(FieldType &field) {}
+        };
+
+        template < typename FieldType >
+        struct field_helper_impl< FieldType, typename std::enable_if< is_cuda_storage< FieldType >::value >::type > {
+            static void h2d_update(FieldType &field) { field.h2d_update(); }
+            static void d2h_update(FieldType &field) { field.d2h_update(); }
+            static void set_on_device(FieldType &field) { field.set_on_device(); }
+        };
+
+        template < typename FieldType >
+        void h2d_update(FieldType &field) {
+            field_helper_impl< FieldType >::h2d_update(field);
+        }
+        template < typename FieldType >
+        void d2h_update(FieldType &field) {
+            field_helper_impl< FieldType >::d2h_update(field);
+        }
+        template < typename FieldType >
+        void set_on_device(FieldType &field) {
+            field_helper_impl< FieldType >::set_on_device(field);
+        }
+    }
+
     /**
-     * Type erased interface for GridTools fields with value_type dycore::Real
+     * Type erased interface for GridTools fields with value_type T
      */
+    template < typename T >
     class type_erased_field_interface : private boost::noncopyable {
       public:
         virtual ~type_erased_field_interface() {}
@@ -68,22 +115,22 @@ namespace internal {
         /**
          * Access the field at position (i, j, k) and return a const refrence of the held value
          */
-        virtual const Real &access(int i, int j, int k) const noexcept = 0;
+        virtual const T &access(int i, int j, int k) const noexcept = 0;
 
         /**
          * Access the field at position (i, j, k) and return a refrence of the held value
          */
-        virtual Real &access(int i, int j, int k) noexcept = 0;
+        virtual T &access(int i, int j, int k) noexcept = 0;
 
         /**
          * Pointer to the storage
          */
-        virtual Real *data() noexcept = 0;
+        virtual T *data() noexcept = 0;
 
         /**
          * Const pointer to the storage
          */
-        virtual const Real *data() const noexcept = 0;
+        virtual const T *data() const noexcept = 0;
 
         /**
          * Get the name of the field
@@ -160,18 +207,20 @@ namespace internal {
         virtual void update_host() noexcept = 0;
     };
 
-    template < class FieldType >
-    class type_erased_field_view_base : public type_erased_field_interface {
+    template < typename FieldType, typename T >
+    class type_erased_field_view_base : public type_erased_field_interface< T > {
       public:
+        static_assert(std::is_same< typename FieldType::value_type, T >::value, "internal error: types do not match");
+
         type_erased_field_view_base(FieldType &field) : field_(field) {}
 
-        virtual const Real &access(int i, int j, int k) const noexcept override { return field_(i, j, k); }
+        virtual const T &access(int i, int j, int k) const noexcept override { return field_(i, j, k); }
 
-        virtual Real &access(int i, int j, int k) noexcept override { return field_(i, j, k); }
+        virtual T &access(int i, int j, int k) noexcept override { return field_(i, j, k); }
 
-        virtual Real *data() noexcept override { return &field_(0, 0, 0); }
+        virtual T *data() noexcept override { return &field_(0, 0, 0); }
 
-        virtual const Real *data() const noexcept override { return &field_(0, 0, 0); }
+        virtual const T *data() const noexcept override { return &field_(0, 0, 0); }
 
         virtual const char *name() const noexcept override { return field_.get_name(); }
 
@@ -205,37 +254,31 @@ namespace internal {
 
         virtual int k_stride() const noexcept override { return field_.meta_data().template strides< 2 >(); }
 
-        virtual void update_device() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.h2d_update();
-#endif
-        }
+        virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
         virtual void update_host() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.set_on_device(); // TODO enforce copy: bug in expandable parameters does not properly
-                                    // set flag
-            field_.d2h_update();
-#endif
+            field_helper::set_on_device(field_); // TODO enforce copy: bug in expandable parameters does not properly
+                                                 // set flag
+            field_helper::d2h_update(field_);
         }
 
       private:
         FieldType &field_;
     };
 
-    template < class FieldType >
-    class type_erased_field_base : public type_erased_field_interface {
+    template < typename FieldType, typename T >
+    class type_erased_field_base : public type_erased_field_interface< T > {
       public:
+        static_assert(std::is_same< typename FieldType::value_type, T >::value, "internal error: types do not match");
+
         type_erased_field_base(const FieldType &field)
             : metaData_(field.meta_data().template unaligned_dim< 0 >(),
                   field.meta_data().template unaligned_dim< 1 >(),
                   field.meta_data().template unaligned_dim< 2 >()),
               field_(metaData_, -1, field.get_name()) {
 
-#ifdef DYCORE_USE_GPU
             // Update field on host
-            field_.d2h_update();
-#endif
+            field_helper::d2h_update(field_);
 
             // Copy field
             int iSize = this->i_size();
@@ -247,13 +290,13 @@ namespace internal {
                         field_(i, j, k) = field(i, j, k);
         }
 
-        virtual const Real &access(int i, int j, int k) const noexcept override { return field_(i, j, k); }
+        virtual const T &access(int i, int j, int k) const noexcept override { return field_(i, j, k); }
 
-        virtual Real &access(int i, int j, int k) noexcept override { return field_(i, j, k); }
+        virtual T &access(int i, int j, int k) noexcept override { return field_(i, j, k); }
 
-        virtual Real *data() noexcept override { return &field_(0, 0, 0); }
+        virtual T *data() noexcept override { return &field_(0, 0, 0); }
 
-        virtual const Real *data() const noexcept override { return &field_(0, 0, 0); }
+        virtual const T *data() const noexcept override { return &field_(0, 0, 0); }
 
         virtual const char *name() const noexcept override { return field_.get_name(); }
 
@@ -287,17 +330,9 @@ namespace internal {
 
         virtual int k_stride() const noexcept override { return field_.meta_data().template strides< 2 >(); }
 
-        virtual void update_device() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.h2d_update();
-#endif
-        }
+        virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
-        virtual void update_host() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.d2h_update();
-#endif
-        }
+        virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
 
       private:
         typename FieldType::storage_info_type metaData_;
@@ -325,7 +360,7 @@ namespace internal {
  * @b Example:
  * @code{.cpp}
  * IJKMetaStorageType meta(32, 32, 80);
- * IJKRealField field("field", meta, Real(5.0));
+ * IJKRealField field("field", meta, T(5.0));
  *
  * // Erase type (capture field by reference)
  * TypeErasedFieldView view(field);
@@ -340,6 +375,7 @@ namespace internal {
  * @ingroup DycoreUnittestCoreLibrary
  * @see TypeErasedField
  */
+template < typename T >
 class type_erased_field_view {
   public:
     type_erased_field_view(const type_erased_field_view &) = default;
@@ -355,33 +391,35 @@ class type_erased_field_view {
         // The const cast is ugly here but the signature of this constructor needs to be the same as
         // the copy constructor. Hence, we need to capture the field by const ref.. maybe this can
         // be improved.
-        base_ = std::make_shared< internal::type_erased_field_view_base< FieldType > >(const_cast< FieldType & >(field));
+        base_ =
+            std::make_shared< internal::type_erased_field_view_base< FieldType, T > >(const_cast< FieldType & >(field));
     }
 
     /**
      * @brief Used by TypeErasedField::toView()
      */
-    type_erased_field_view(std::shared_ptr< internal::type_erased_field_interface > &base, bool /*unused*/) : base_(base) {}
+    type_erased_field_view(std::shared_ptr< internal::type_erased_field_interface< T > > &base, bool /*unused*/)
+        : base_(base) {}
 
     /**
      * @brief Access the field at position (i, j, k) and return a const reference of the held value
      */
-    const Real &operator()(int i, int j, int k) const noexcept { return base_->access(i, j, k); }
+    const T &operator()(int i, int j, int k) const noexcept { return base_->access(i, j, k); }
 
     /**
      * @brief Access the field at position (i, j, k) and return a reference of the held value
      */
-    Real &operator()(int i, int j, int k) noexcept { return base_->access(i, j, k); }
+    T &operator()(int i, int j, int k) noexcept { return base_->access(i, j, k); }
 
     /**
      * @brief Pointer to the storage
      */
-    Real *data() noexcept { return base_->data(); }
+    T *data() noexcept { return base_->data(); }
 
     /**
      * @brief Const pointer to the storage
      */
-    const Real *data() const noexcept { return base_->data(); }
+    const T *data() const noexcept { return base_->data(); }
 
     /**
      * @brief First dimension (i-direction) excluding halo-boundaries
@@ -463,7 +501,7 @@ class type_erased_field_view {
     void update_host() const noexcept { base_->update_host(); }
 
   private:
-    std::shared_ptr< internal::type_erased_field_interface > base_;
+    std::shared_ptr< internal::type_erased_field_interface< T > > base_;
 };
 
 /**
@@ -472,12 +510,12 @@ class type_erased_field_view {
  * The field is captured by @b value, hence copied in from the original field. Construction
  * cost is O(n) where n is the total size of the field.
  *
- * The TypeErasedFieldView allows an uniform treatement of all Field types (see @ref Storage).
+ * The TypeErasedFieldView allows an uniform treatment of all Field types (see @ref Storage).
  *
  * @b Example:
  * @code{.cpp}
  * IJKMetaStorageType meta(32, 32, 80);
- * IJKRealField field("field", meta, Real(5.0));
+ * IJKRealField field("field", meta, T(5.0));
  *
  * // Erase type (capture field by value)
  * TypeErasedField copy_field(field);
@@ -492,6 +530,7 @@ class type_erased_field_view {
  * @ingroup DycoreUnittestCoreLibrary
  * @see TypeErasedFieldView
  */
+template < typename T >
 class type_erased_field {
   public:
     type_erased_field(const type_erased_field &) = default;
@@ -502,28 +541,28 @@ class type_erased_field {
      */
     template < class FieldType >
     type_erased_field(const FieldType &field) {
-        base_ = std::make_shared< internal::type_erased_field_base< FieldType > >(field);
+        base_ = std::make_shared< internal::type_erased_field_base< FieldType, T > >(field);
     }
 
     /**
      * @brief Access the field at position (i, j, k) and return a const refrence of the held value
      */
-    const Real &operator()(int i, int j, int k) const noexcept { return base_->access(i, j, k); }
+    const T &operator()(int i, int j, int k) const noexcept { return base_->access(i, j, k); }
 
     /**
      * @brief Access the field at position (i, j, k) and return a refrence of the held value
      */
-    Real &operator()(int i, int j, int k) noexcept { return base_->access(i, j, k); }
+    T &operator()(int i, int j, int k) noexcept { return base_->access(i, j, k); }
 
     /**
      * @brief Pointer to the storage
      */
-    Real *data() noexcept { return base_->data(); }
+    T *data() noexcept { return base_->data(); }
 
     /**
      * @brief Const pointer to the storage
      */
-    const Real *data() const noexcept { return base_->data(); }
+    const T *data() const noexcept { return base_->data(); }
 
     /**
      * @brief First dimension (i-direction) excluding halo-boundaries
@@ -607,10 +646,10 @@ class type_erased_field {
     /**
      * @brief Convert field to view
      */
-    type_erased_field_view to_view() noexcept { return type_erased_field_view(base_, true); }
+    type_erased_field_view< T > to_view() noexcept { return type_erased_field_view< T >(base_, true); }
 
   private:
-    std::shared_ptr< internal::type_erased_field_interface > base_;
+    std::shared_ptr< internal::type_erased_field_interface< T > > base_;
 };
 
 GT_VERIFICATION_NAMESPACE_END

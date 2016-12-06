@@ -46,11 +46,6 @@ GT_VERIFICATION_NAMESPACE_BEGIN
  * @ingroup DycoreUnittestBenchmarkLibrary
  */
 class cache_flusher {
-#ifdef DYCORE_USE_GPU // TODO fix
-  public:
-    cache_flusher(int n){};
-    void flush() noexcept {};
-#else
   public:
     /**
      * @brief Initialize with (n >= cache size) to flush all level of caches
@@ -86,7 +81,6 @@ class cache_flusher {
     std::vector< double > b_;
     std::vector< double > c_;
     int n_;
-#endif
 };
 
 GT_VERIFICATION_NAMESPACE_END

@@ -55,6 +55,7 @@ GT_VERIFICATION_NAMESPACE_BEGIN
  *
  * @ingroup DycoreUnittestBenchmarkLibrary
  */
+template < typename T >
 class field_initializer : private boost::noncopyable /* singleton */
 {
   public:
@@ -63,16 +64,16 @@ class field_initializer : private boost::noncopyable /* singleton */
     field_initializer() : device_(), generator_(device_()) {}
 
     /**
-     * @brief Initialize a @c gridtools field with @ref dycore::Real "Real" random numbers uniformly
+     * @brief Initialize a @c gridtools field with random numbers of type T uniformly
      * distributed on the interval [a, b)
      *
      * @param a     Lower bound (inclusive)
      * @param b     Upper bound (exclusive)
      */
     template < class FieldType >
-    void init(FieldType &field, Real a = -10.0, Real b = 10.0) noexcept {
-        std::uniform_real_distribution< Real > dist(a, b);
-        type_erased_field_view fieldView(field);
+    void init(FieldType &field, T a = -10.0, T b = 10.0) noexcept {
+        std::uniform_real_distribution< T > dist(a, b);
+        type_erased_field_view< T > fieldView(field);
         fieldView.update_host();
 
         const int iSizeHalo = fieldView.i_size();
@@ -96,8 +97,8 @@ class field_initializer : private boost::noncopyable /* singleton */
      * @param a     Lower bound (inclusive)
      * @param b     Upper bound (exclusive)
      */
-    inline Real rand(Real a = 0.0, Real b = 1.0) noexcept {
-        std::uniform_real_distribution< Real > dist(a, b);
+    inline T rand(T a = 0.0, T b = 1.0) noexcept {
+        std::uniform_real_distribution< T > dist(a, b);
         return dist(generator_);
     }
 
