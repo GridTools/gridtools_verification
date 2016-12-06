@@ -73,7 +73,7 @@ class field_initializer : private boost::noncopyable /* singleton */
     template < class FieldType >
     void init(FieldType &field, T a = -10.0, T b = 10.0) noexcept {
         std::uniform_real_distribution< T > dist(a, b);
-        type_erased_field_view fieldView(field);
+        type_erased_field_view< T > fieldView(field);
         fieldView.update_host();
 
         const int iSizeHalo = fieldView.i_size();
