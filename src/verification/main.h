@@ -15,6 +15,8 @@ int gridtools_verification_main(int argc, char *argv[]) {
     // Pass command line arguments to googletest
     testing::InitGoogleTest(&argc, argv);
 
+    gt_verification::command_line cl(argc, argv);
+
     if (cl.has("help"))
         cl.print_help(argv[0]);
 
