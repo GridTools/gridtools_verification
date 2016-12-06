@@ -34,96 +34,10 @@
   For information: http://eth-cscs.github.io/gridtools/
 */
 #include "field_collection.h"
-#include "../verification_exception.h"
-#include "../core/command_line.h"
-#include "../core/error.h"
-#include "../core/logger.h"
-#include "../core/serialization.h"
-#include "verification_reporter.h"
-#include <algorithm>
-#include <utility>
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
-void field_collection::attach_reference_serializer(std::shared_ptr< ser::Serializer > serializer,
-    const std::string &inSavepointName,
-    const std::string &outSavepointName) {
-    referenceSerializer_ = serializer;
-
-    const std::vector< ser::Savepoint > &savepoints = referenceSerializer_->savepoints();
-    iterations_.clear();
-
-    for (auto it = savepoints.cbegin(), end = savepoints.cend(); it != end; ++it) {
-        if (it->name() == outSavepointName) {
-            // Output savepoint is found, now search input savepoint
-            auto rit = std::reverse_iterator< decltype(it) >(it);
-            while (rit != savepoints.rend()) {
-                if (rit->name() == inSavepointName)
-                    // Pair found, finish search
-                    break;
-                ++rit;
-            }
-
-            if (rit != savepoints.rend())
-                iterations_.push_back(internal::savepoint_pair(*rit, *it));
-        }
-    }
-}
-
-void field_collection::attach_error_serializer(std::shared_ptr< ser::Serializer > serializer) {
-    errorSerializer_ = serializer;
-}
-
-void field_collection::load_iteration(int iteration) {
-    if (iteration >= (int)iterations_.size())
-        error::fatal(boost::format("invalid access of iteration '%i' (there are only %i iterations)") % iteration %
-                     iterations_.size());
-
-    serialization serialization(referenceSerializer_);
-
-    auto inputSavepoint = iterations_[iteration].input;
-    auto refSavepoint = iterations_[iteration].output;
-
-    try {
-        // Load input fields
-        VERIFICATION_LOG() << "Loading input savepoint '" << inputSavepoint << "'" << logger_action::endl;
-
-        for (auto &inputFieldPair : inputFields_)
-            serialization.load(inputFieldPair.first, inputFieldPair.second, inputSavepoint);
-
-        // Load reference fields
-        VERIFICATION_LOG() << "Loading reference savepoint '" << refSavepoint << "'" << logger_action::endl;
-
-        for (auto &refFieldPair : referenceFields_)
-            serialization.load(refFieldPair.first, refFieldPair.second.to_view(), refSavepoint);
-    } catch (verification_exception &e) {
-        error::fatal(e.what());
-    }
-}
-
-verification_result field_collection::verify(error_metric< Real > errorMetric) {
-    verifications_.clear();
-
-    verification_result totalResult(true, "\n");
-
-    // Iterate over output fields and compare them to the reference fields
-    for (std::size_t i = 0; i < outputFields_.size(); ++i) {
-        verifications_.emplace_back(
-            outputFields_[i].second, referenceFields_[i].second.to_view(), errorMetric, boundaries_[i]);
-
-        // Perform actual verification and merge results
-        totalResult.merge(verifications_.back().verify());
-    }
-
-    return totalResult;
-}
-
-void field_collection::report_failures() const noexcept {
-    verification_reporter verificationReporter(verificationSpecification_);
-    for (const auto &verification : verifications_)
-        if (!verification) {
-            verificationReporter.report(verification);
-        }
-}
+template class field_collection< float >;
+template class field_collection< double >;
 
 GT_VERIFICATION_NAMESPACE_END
