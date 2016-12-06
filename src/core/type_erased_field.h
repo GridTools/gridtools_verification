@@ -42,6 +42,12 @@
 #include <boost/type_traits.hpp>
 #include "../common.h"
 
+// FIXME forward
+namespace gridtools {
+    template < typename T, bool B >
+    struct hybrid_pointer;
+}
+
 GT_VERIFICATION_NAMESPACE_BEGIN
 
 namespace internal {
@@ -53,23 +59,20 @@ namespace internal {
             typedef typename boost::remove_reference< typename boost::remove_cv< T >::type >::type type;
         };
 
-        template < typename T, bool B >
-        struct hybrid_pointer;
-
         template < typename T >
         struct is_hybrid_pointer_impl : boost::mpl::false_ {};
 
         template < typename T >
-        struct is_hybrid_pointer_impl< hybrid_pointer< T, false > > : boost::mpl::true_ {};
+        struct is_hybrid_pointer_impl< gridtools::hybrid_pointer< T, false > > : boost::mpl::true_ {};
 
         template < typename T >
-        struct is_hybrid_pointer_impl< hybrid_pointer< T, true > > : boost::mpl::true_ {};
+        struct is_hybrid_pointer_impl< gridtools::hybrid_pointer< T, true > > : boost::mpl::true_ {};
 
         template < typename T >
         struct is_hybrid_pointer : is_hybrid_pointer_impl< typename remove_ref_cv< T >::type > {};
 
         template < typename FieldType >
-        struct is_cuda_storage : is_hybrid_pointer< typename FieldType::PointerType > {};
+        struct is_cuda_storage : is_hybrid_pointer< typename FieldType::super::pointer_type > {};
     }
 
     namespace field_helper {
