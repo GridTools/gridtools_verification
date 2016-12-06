@@ -37,11 +37,8 @@
 
 #include "../common.h"
 
-#ifdef DYCORE_USE_GPU // TODO fix
 #include <stencil-composition/backend_cuda/timer_cuda.hpp>
-#else
 #include <stencil-composition/backend_host/timer_host.hpp>
-#endif
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
@@ -68,11 +65,22 @@ GT_VERIFICATION_NAMESPACE_BEGIN
  * @ingroup Timer
  * @{
  */
-#ifdef DYCORE_USE_GPU
-using timer = gridtools::timer_cuda;
-#else
-using timer = gridtools::timer_host;
-#endif
+
+namespace {
+    template < gridtools::enumtype::platform Platform >
+    struct select_timer {
+        using timer = gridtools::timer_host;
+    };
+
+    template <>
+    struct select_timer< gridtools::enumtype::Cuda > {
+        using timer = gridtools::timer_cuda;
+    };
+}
+
+template < gridtools::enumtype::platform Platform >
+using timer = typename select_timet< Platform >::type;
+
 /** @} */
 
 /** @} */

@@ -98,11 +98,9 @@ class verification {
      * @return VerificationResult
      */
     verification_result verify() noexcept {
-#ifdef DYCORE_USE_GPU
         // Sync fields with Host
-        outputField_.updateHost();
-        referenceField_.updateHost();
-#endif
+        outputField_.update_host();
+        referenceField_.update_host();
 
         failures_.clear();
 

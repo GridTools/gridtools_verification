@@ -39,11 +39,67 @@
 #include <utility>
 #include <memory>
 #include <boost/mpl/bool.hpp>
+#include <boost/type_traits.hpp>
 #include "../common.h"
 
 GT_VERIFICATION_NAMESPACE_BEGIN
 
 namespace internal {
+
+    // FIXME should be removed with the new storage (copied from gridtools/common/pointer_metafunctions.hpp)
+    namespace {
+        template < typename T >
+        struct remove_ref_cv {
+            typedef typename boost::remove_reference< typename boost::remove_cv< T >::type >::type type;
+        };
+
+        template < typename T, bool B >
+        struct hybrid_pointer;
+
+        template < typename T >
+        struct is_hybrid_pointer_impl : boost::mpl::false_ {};
+
+        template < typename T >
+        struct is_hybrid_pointer_impl< hybrid_pointer< T, false > > : boost::mpl::true_ {};
+
+        template < typename T >
+        struct is_hybrid_pointer_impl< hybrid_pointer< T, true > > : boost::mpl::true_ {};
+
+        template < typename T >
+        struct is_hybrid_pointer : is_hybrid_pointer_impl< typename remove_ref_cv< T >::type > {};
+
+        template < typename FieldType >
+        struct is_cuda_storage : is_hybrid_pointer< typename FieldType::PointerType > {};
+    }
+
+    namespace field_helper {
+        template < typename FieldType, typename Enable = void >
+        struct field_helper_impl {
+            static void h2d_update() {}
+            static void d2h_update() {}
+            static void set_on_device() {}
+        };
+
+        template < typename FieldType >
+        struct field_helper_impl< FieldType, typename std::enable_if< is_cuda_storage< FieldType >::value >::type > {
+            static void h2d_update(FieldType &field) { field.h2d_update(); }
+            static void d2h_update(FieldType &field) { field.d2h_update(); }
+            static void set_on_device(FieldType &field) { field.set_on_device(); }
+        };
+
+        template < typename FieldType >
+        void h2d_update(FieldType &field) {
+            field_helper_impl< FieldType >::h2d_update(field);
+        }
+        template < typename FieldType >
+        void d2h_update(FieldType &field) {
+            field_helper_impl< FieldType >::d2h_update(field);
+        }
+        template < typename FieldType >
+        void set_on_device(FieldType &field) {
+            field_helper_impl< FieldType >::set_on_device(field);
+        }
+    }
 
     /**
      * Type erased interface for GridTools fields with value_type T
@@ -195,18 +251,12 @@ namespace internal {
 
         virtual int k_stride() const noexcept override { return field_.meta_data().template strides< 2 >(); }
 
-        virtual void update_device() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.h2d_update();
-#endif
-        }
+        virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
         virtual void update_host() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.set_on_device(); // TODO enforce copy: bug in expandable parameters does not properly
-                                    // set flag
-            field_.d2h_update();
-#endif
+            field_helper::set_on_device(field_); // TODO enforce copy: bug in expandable parameters does not properly
+                                                 // set flag
+            field_helper::d2h_update(field_);
         }
 
       private:
@@ -224,10 +274,8 @@ namespace internal {
                   field.meta_data().template unaligned_dim< 2 >()),
               field_(metaData_, -1, field.get_name()) {
 
-#ifdef DYCORE_USE_GPU
             // Update field on host
-            field_.d2h_update();
-#endif
+            field_helper::d2h_update(field_);
 
             // Copy field
             int iSize = this->i_size();
@@ -279,17 +327,9 @@ namespace internal {
 
         virtual int k_stride() const noexcept override { return field_.meta_data().template strides< 2 >(); }
 
-        virtual void update_device() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.h2d_update();
-#endif
-        }
+        virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
-        virtual void update_host() noexcept override {
-#ifdef DYCORE_USE_GPU
-            field_.d2h_update();
-#endif
-        }
+        virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
 
       private:
         typename FieldType::storage_info_type metaData_;
