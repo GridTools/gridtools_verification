@@ -18,7 +18,7 @@ class unittest_environment : public testing::Environment,
                              private boost::noncopyable /* singleton */
 {
   public:
-    unittest_environment(command_line &cl) : cl_(cl), data_path_("./") {
+    unittest_environment(command_line &cl, std::string data_name) : cl_(cl), data_path_("./") {
         if (cl_.has("path"))
             data_path_ = cl_.as< std::string >("path");
 
@@ -26,7 +26,7 @@ class unittest_environment : public testing::Environment,
 
         // Initialize the serializer
         reference_serializer_ = std::make_shared< ser::Serializer >();
-        reference_serializer_->Init(data_path_, "Field", ser::SerializerOpenModeRead);
+        reference_serializer_->Init(data_path_, data_name, ser::SerializerOpenModeRead);
 
         // Initialize error serializer
         error_serializer_ = std::make_shared< ser::Serializer >();
