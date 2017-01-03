@@ -275,7 +275,7 @@ double MetainfoSet::AsDouble(const std::string& key) const
     else if(t == typeid(double)) return boost::any_cast<double>(a);
     else if(t == typeid(std::string))
     {
-        float v;
+        double v;
         std::stringstream ss;
         ss << boost::any_cast<std::string>(a);
         ss >> v;
