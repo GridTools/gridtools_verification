@@ -61,6 +61,12 @@ namespace internal {
         ser::Savepoint input;
         ser::Savepoint output;
     };
+
+    template < typename T >
+    struct input_field {
+        const std::string first;
+        const gt_verification::type_erased_field_view< T > second;
+    };
 }
 
 /**
@@ -129,7 +135,7 @@ class field_collection {
      */
     template < typename FieldType >
     void register_input_field(const std::string &fieldname, FieldType &field) noexcept {
-        inputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
+        inputFields_.push_back(internal::input_field< T >(fieldname, type_erased_field_view< T >(field)));
     }
 
     /**
@@ -241,7 +247,7 @@ class field_collection {
 
     std::vector< internal::savepoint_pair > iterations_;
 
-    std::vector< std::pair< std::string, type_erased_field_view< T > > > inputFields_;
+    std::vector< internal::input_field< T > > inputFields_;
     std::vector< std::pair< std::string, type_erased_field_view< T > > > outputFields_;
     std::vector< std::pair< std::string, type_erased_field< T > > > referenceFields_;
     std::vector< boundary_extent > boundaries_;

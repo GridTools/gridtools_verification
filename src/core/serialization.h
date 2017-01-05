@@ -75,12 +75,15 @@ class serialization : private boost::noncopyable {
      * @{
      */
     template < class FieldType >
-    void load(const std::string &name, FieldType &field, const ser::Savepoint &savepoint) {
-        this->load(name, type_erased_field_view< typename FieldType::value_type >(field), savepoint);
+    void load(const std::string &name, FieldType &field, const ser::Savepoint &savepoint, bool alsoPrevious = false) {
+        this->load(name, type_erased_field_view< typename FieldType::value_type >(field), savepoint, alsoPrevious);
     }
 
     template < typename T >
-    void load(const std::string &name, type_erased_field_view< T > field, const ser::Savepoint &savepoint) {
+    void load(const std::string &name,
+        type_erased_field_view< T > field,
+        const ser::Savepoint &savepoint,
+        bool alsoPrevious = false) {
         // Make sure data is on the Host
         field.update_host();
 
@@ -117,7 +120,8 @@ class serialization : private boost::noncopyable {
         int jStride = field.j_stride() * info.bytesPerElement();
         int kStride = field.k_stride() * info.bytesPerElement();
 
-        serializer_->ReadField(name, savepoint, static_cast< void * >(field.data()), iStride, jStride, kStride, 0);
+        serializer_->ReadField(
+            name, savepoint, static_cast< void * >(field.data()), iStride, jStride, kStride, 0, alsoPrevious);
     }
 
     /** @} */
