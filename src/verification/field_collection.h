@@ -135,7 +135,7 @@ class field_collection {
      */
     template < typename FieldType >
     void register_input_field(const std::string &fieldname, FieldType &field) noexcept {
-        inputFields_.push_back(internal::input_field< T >(fieldname, type_erased_field_view< T >(field)));
+        inputFields_.push_back(internal::input_field< T >{fieldname, type_erased_field_view< T >(field)});
     }
 
     /**
