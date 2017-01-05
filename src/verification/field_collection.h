@@ -72,8 +72,8 @@ namespace internal {
         bool also_previous() const noexcept { return also_previous_; }
 
       private:
-        const std::string name_;                                        // FIXME name!
-        const gt_verification::type_erased_field_view< T > field_view_; // FIXME name!
+        const std::string name_;
+        const gt_verification::type_erased_field_view< T > field_view_;
         bool also_previous_;
     };
 }
