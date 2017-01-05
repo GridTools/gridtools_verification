@@ -63,14 +63,18 @@ namespace internal {
     };
 
     template < typename T >
-    struct input_field {
-        const std::string first;                                   // FIXME name!
-        const gt_verification::type_erased_field_view< T > second; // FIXME name!
-        bool also_previous_;
-
-        std::string name() const noexcept { return first; }
-        gt_verification::type_erased_field_view< T > field_view() const noexcept { return second; }
+    class input_field {
+      public:
+        input_field(std::string name, gt_verification::type_erased_field_view< T > field_view, bool also_previous)
+            : name_(name), field_view_(field_view), also_previous_(also_previous) {}
+        std::string name() const noexcept { return name_; }
+        gt_verification::type_erased_field_view< T > field_view() const noexcept { return field_view_; }
         bool also_previous() const noexcept { return also_previous_; }
+
+      private:
+        const std::string name_;                                        // FIXME name!
+        const gt_verification::type_erased_field_view< T > field_view_; // FIXME name!
+        bool also_previous_;
     };
 }
 
@@ -185,7 +189,7 @@ class field_collection {
 
             for (auto &inputFieldPair : inputFields_)
                 serialization.load(
-                    inputFieldPair.first, inputFieldPair.second, inputSavepoint, inputFieldPair.also_previous());
+                    inputFieldPair.name(), inputFieldPair.field_view(), inputSavepoint, inputFieldPair.also_previous());
 
             // Load reference fields
             VERIFICATION_LOG() << "Loading reference savepoint '" << refSavepoint << "'" << logger_action::endl;
