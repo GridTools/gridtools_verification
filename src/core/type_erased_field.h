@@ -256,11 +256,7 @@ namespace internal {
 
         virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
-        virtual void update_host() noexcept override {
-            field_helper::set_on_device(field_); // TODO enforce copy: bug in expandable parameters does not properly
-                                                 // set flag
-            field_helper::d2h_update(field_);
-        }
+        virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
 
       private:
         FieldType &field_;
