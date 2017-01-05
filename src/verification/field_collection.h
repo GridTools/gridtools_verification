@@ -61,6 +61,21 @@ namespace internal {
         ser::Savepoint input;
         ser::Savepoint output;
     };
+
+    template < typename T >
+    class input_field {
+      public:
+        input_field(std::string name, gt_verification::type_erased_field_view< T > field_view, bool also_previous)
+            : name_(name), field_view_(field_view), also_previous_(also_previous) {}
+        std::string name() const noexcept { return name_; }
+        gt_verification::type_erased_field_view< T > field_view() const noexcept { return field_view_; }
+        bool also_previous() const noexcept { return also_previous_; }
+
+      private:
+        const std::string name_;
+        const gt_verification::type_erased_field_view< T > field_view_;
+        bool also_previous_;
+    };
 }
 
 /**
@@ -128,8 +143,9 @@ class field_collection {
      * @param field     The field that has to be filled with data from disk
      */
     template < typename FieldType >
-    void register_input_field(const std::string &fieldname, FieldType &field) noexcept {
-        inputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
+    void register_input_field(const std::string &fieldname, FieldType &field, bool also_previous = false) noexcept {
+        inputFields_.push_back(
+            internal::input_field< T >{fieldname, type_erased_field_view< T >(field), also_previous});
     }
 
     /**
@@ -172,7 +188,8 @@ class field_collection {
             VERIFICATION_LOG() << "Loading input savepoint '" << inputSavepoint << "'" << logger_action::endl;
 
             for (auto &inputFieldPair : inputFields_)
-                serialization.load(inputFieldPair.first, inputFieldPair.second, inputSavepoint);
+                serialization.load(
+                    inputFieldPair.name(), inputFieldPair.field_view(), inputSavepoint, inputFieldPair.also_previous());
 
             // Load reference fields
             VERIFICATION_LOG() << "Loading reference savepoint '" << refSavepoint << "'" << logger_action::endl;
@@ -241,7 +258,7 @@ class field_collection {
 
     std::vector< internal::savepoint_pair > iterations_;
 
-    std::vector< std::pair< std::string, type_erased_field_view< T > > > inputFields_;
+    std::vector< internal::input_field< T > > inputFields_;
     std::vector< std::pair< std::string, type_erased_field_view< T > > > outputFields_;
     std::vector< std::pair< std::string, type_erased_field< T > > > referenceFields_;
     std::vector< boundary_extent > boundaries_;
