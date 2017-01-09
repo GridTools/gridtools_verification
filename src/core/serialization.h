@@ -84,6 +84,9 @@ class serialization : private boost::noncopyable {
         type_erased_field_view< T > field,
         const ser::Savepoint &savepoint,
         bool alsoPrevious = false) {
+
+        bool field_was_on_device = !field.is_on_host();
+
         // Make sure data is on the Host
         field.update_host();
 
@@ -122,6 +125,9 @@ class serialization : private boost::noncopyable {
 
         serializer_->ReadField(
             name, savepoint, static_cast< void * >(field.data()), iStride, jStride, kStride, 0, alsoPrevious);
+
+        if (field_was_on_device)
+            field.update_device();
     }
 
     /** @} */
