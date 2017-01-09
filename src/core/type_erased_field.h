@@ -502,7 +502,7 @@ class type_erased_field_view {
      */
     void update_host() const noexcept { base_->update_host(); }
 
-    bool is_on_host() const noexcept { return base_.is_on_host(); }
+    bool is_on_host() const noexcept { return base_->is_on_host(); }
 
   private:
     std::shared_ptr< internal::type_erased_field_interface< T > > base_;
@@ -647,7 +647,7 @@ class type_erased_field {
      */
     void update_host() const noexcept { base_->update_host(); }
 
-    bool is_on_host() const noexcept { return base_.is_on_host(); }
+    bool is_on_host() const noexcept { return base_->is_on_host(); }
 
     /**
      * @brief Convert field to view
