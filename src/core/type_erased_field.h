@@ -205,6 +205,8 @@ namespace internal {
          * Update host pointer (calls d2h_update)
          */
         virtual void update_host() noexcept = 0;
+
+        virtual bool is_on_host() const noexcept = 0;
     };
 
     template < typename FieldType, typename T >
@@ -257,6 +259,8 @@ namespace internal {
         virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
         virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
+
+        virtual bool is_on_host() const noexcept override { return field_.is_on_host(); }
 
       private:
         FieldType &field_;
@@ -329,6 +333,8 @@ namespace internal {
         virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
         virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
+
+        virtual bool is_on_host() const noexcept override { return field_.is_on_host(); }
 
       private:
         typename FieldType::storage_info_type metaData_;
@@ -496,6 +502,8 @@ class type_erased_field_view {
      */
     void update_host() const noexcept { base_->update_host(); }
 
+    bool is_on_host() const noexcept { return base_.is_on_host(); }
+
   private:
     std::shared_ptr< internal::type_erased_field_interface< T > > base_;
 };
@@ -638,6 +646,8 @@ class type_erased_field {
      * @brief Update host pointer (calls d2h_update)
      */
     void update_host() const noexcept { base_->update_host(); }
+
+    bool is_on_host() const noexcept { return base_.is_on_host(); }
 
     /**
      * @brief Convert field to view
