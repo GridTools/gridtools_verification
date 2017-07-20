@@ -58,8 +58,8 @@ namespace internal {
         savepoint_pair(SavePointType &&_input, SavePointType &&_output)
             : input(std::forward< SavePointType >(_input)), output(std::forward< SavePointType >(_output)) {}
 
-        ser::Savepoint input;
-        ser::Savepoint output;
+        ser::savepoint input;
+        ser::savepoint output;
     };
 
     template < typename T >
@@ -102,12 +102,12 @@ class field_collection {
      * @param outSavepointName  The name of the savepoint where the reference values are stored
      * @param inSavepointName   The name of the savepoint where the input values are stored
      */
-    void attach_reference_serializer(std::shared_ptr< ser::Serializer > serializer,
+    void attach_reference_serializer(std::shared_ptr< ser::serializer > serializer,
         const std::string &inSavepointName,
         const std::string &outSavepointName) {
         referenceSerializer_ = serializer;
 
-        const std::vector< ser::Savepoint > &savepoints = referenceSerializer_->savepoints();
+        const std::vector< ser::savepoint > &savepoints = referenceSerializer_->savepoints();
         iterations_.clear();
 
         for (auto it = savepoints.cbegin(), end = savepoints.cend(); it != end; ++it) {
@@ -134,7 +134,7 @@ class field_collection {
      * @param serializer  The serializer which will be used to serialization
      *                    (in SerializerOpenModeWrite)
      */
-    void attach_error_serializer(std::shared_ptr< ser::Serializer > serializer) { errorSerializer_ = serializer; }
+    void attach_error_serializer(std::shared_ptr< ser::serializer > serializer) { errorSerializer_ = serializer; }
 
     /**
      * @brief Register an input field which will be filled during the loadIteration() function
@@ -239,12 +239,12 @@ class field_collection {
     /**
      * @brief Get the reference serializer
      */
-    std::shared_ptr< ser::Serializer > reference_serializer() const noexcept { return referenceSerializer_; }
+    std::shared_ptr< ser::serializer > reference_serializer() const noexcept { return referenceSerializer_; }
 
     /**
      * @brief Get the error serializer
      */
-    std::shared_ptr< ser::Serializer > error_serializer() const noexcept { return errorSerializer_; }
+    std::shared_ptr< ser::serializer > error_serializer() const noexcept { return errorSerializer_; }
 
     /**
      * @brief Get a const reference of the iterations
@@ -253,8 +253,8 @@ class field_collection {
 
   private:
     std::string name_;
-    std::shared_ptr< ser::Serializer > referenceSerializer_;
-    std::shared_ptr< ser::Serializer > errorSerializer_;
+    std::shared_ptr< ser::serializer > referenceSerializer_;
+    std::shared_ptr< ser::serializer > errorSerializer_;
 
     std::vector< internal::savepoint_pair > iterations_;
 

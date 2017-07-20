@@ -25,12 +25,10 @@ class unittest_environment : public testing::Environment,
         VERIFICATION_LOG() << "Using serializer data-path: '" << data_path_ << "'" << logger_action::endl;
 
         // Initialize the serializer
-        reference_serializer_ = std::make_shared< ser::Serializer >();
-        reference_serializer_->Init(data_path_, data_name, ser::SerializerOpenModeRead);
+        reference_serializer_ = std::make_shared< ser::serializer >(ser::open_mode::Read, data_path_, data_name);
 
         // Initialize error serializer
-        error_serializer_ = std::make_shared< ser::Serializer >();
-        error_serializer_->Init(".", "Error", ser::SerializerOpenModeWrite);
+        error_serializer_ = std::make_shared< ser::serializer >(ser::open_mode::Write, ".", "Error");
     };
 
     static unittest_environment &get_instance();
@@ -62,14 +60,14 @@ class unittest_environment : public testing::Environment,
      *
      * @see Serialization
      */
-    std::shared_ptr< ser::Serializer > reference_serializer() const noexcept { return reference_serializer_; }
+    std::shared_ptr< ser::serializer > reference_serializer() const noexcept { return reference_serializer_; }
 
     /**
      * @brief Get the error serialbox serializer
      *
      * @see Serialization
      */
-    std::shared_ptr< ser::Serializer > error_serializer() const noexcept { return error_serializer_; }
+    std::shared_ptr< ser::serializer > error_serializer() const noexcept { return error_serializer_; }
 
     /**
      * @brief Initializes and returns a collection for the tests
@@ -142,8 +140,8 @@ class unittest_environment : public testing::Environment,
     std::string data_path_;
 
     // Serializer objects
-    std::shared_ptr< ser::Serializer > reference_serializer_;
-    std::shared_ptr< ser::Serializer > error_serializer_;
+    std::shared_ptr< ser::serializer > reference_serializer_;
+    std::shared_ptr< ser::serializer > error_serializer_;
 
     // List of skipped tests
     std::vector< std::string > skipped_;

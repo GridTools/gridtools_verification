@@ -53,6 +53,7 @@ include_directories(${GTEST_INCLUDE_DIRS})
 
 #----------------- find Serialbox2
 find_package( Serialbox REQUIRED)
+include_directories( ${SERIALBOX_INCLUDE_DIRS} )
 
 #----------------- Glob the headers (for IDEs)
 file(GLOB_RECURSE GT_VERIFICATION_HEADERS 
