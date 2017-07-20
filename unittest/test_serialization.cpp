@@ -37,12 +37,12 @@
 #include <core.h>
 #include <core/serialization.h>
 #include <cmath>
-#include <gridtools.hpp>
 #include "helper_dycore.h"
 
 using namespace gt_verification;
 
 #ifdef HAS_GRIDTOOLS
+#include <gridtools.hpp>
 /**
  * @brief Serialization unittest
  */
