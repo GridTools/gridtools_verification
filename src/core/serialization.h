@@ -155,51 +155,57 @@ class serialization : private boost::noncopyable {
     //    template < typename T >
     //    void write(std::string name, type_erased_field_view< T > field, const ser::Savepoint &savepoint);
     /** @} */
-    // void serialization::write(std::string name, type_erased_field_view field, const ser::Savepoint &savepoint) {
-    // Make sure data is on the Host
 
-    //    field.updateHost();
-    //
-    //    if (name.empty())
-    //        name = field.name();
-    //
-    //    int iSize = field.iSize();
-    //    int jSize = field.jSize();
-    //    int kSize = field.kSize();
-    //
-    //    VERIFICATION_LOG() << boost::format("Serializing '%s'") % name << logger::endl;
-    //
-    //    const int bytesPerElement = sizeof(Real);
-    //    int istride = field.iStride() * bytesPerElement;
-    //    int jstride = field.jStride() * bytesPerElement;
-    //    int kstride = field.kStride() * bytesPerElement;
-    //
-    //    try {
-    //        // Register field
-    //        serializer_->RegisterField(name,
-    //            ser::type_name< Real >(),
-    //            bytesPerElement,
-    //            iSize,
-    //            jSize,
-    //            kSize,
-    //            1,
-    //            dycore::iMinusHaloSize, // FIXME
-    //            dycore::iPlusHaloSize,
-    //            dycore::jMinusHaloSize,
-    //            dycore::jPlusHaloSize,
-    //            0,
-    //            0,
-    //            0,
-    //            0);
-    //
-    //        // Write field to disk
-    //        serializer_->WriteField(name, savepoint, static_cast< void * >(field.data()), istride, jstride, kstride,
-    //        0);
-    //    } catch (ser::SerializationException &serException) {
-    //        std::string errmsg(serException.what());
-    //        throw VerificationException(errmsg.substr(errmsg.find_first_of("Error:") + sizeof("Error:")).c_str());
-    //    }
-    //}
+    template < typename T >
+    void write(std::string name, type_erased_field_view<T> field, const ser::Savepoint &savepoint) {
+    // Make sure data is on the Host
+    field.update_host();
+
+    if (name.empty())
+        name = field.name();
+
+    int iSize = field.i_size();
+    int jSize = field.j_size();
+    int kSize = field.k_size();
+
+    VERIFICATION_LOG() << boost::format("Serializing '%s'") % name << logger_action::endl;
+
+    const int bytesPerElement = sizeof(T);
+    int istride = field.i_stride() * bytesPerElement;
+    int jstride = field.j_stride() * bytesPerElement;
+    int kstride = field.k_stride() * bytesPerElement;
+
+    const int iMinusHaloSize = 3;
+    const int iPlusHaloSize = 3;
+    const int jMinusHaloSize = 3;
+    const int jPlusHaloSize = 3;
+
+    try {
+        // Register field
+        serializer_->RegisterField(name,
+            ser::type_name< T >(),
+            bytesPerElement,
+            iSize,
+            jSize,
+            kSize,
+            1,
+            iMinusHaloSize, // FIXME
+            iPlusHaloSize,
+            jMinusHaloSize,
+            jPlusHaloSize,
+            0,
+            0,
+            0,
+            0);
+
+        // Write field to disk
+        serializer_->WriteField(name, savepoint, static_cast< void * >(field.data()), istride, jstride, kstride,
+        0);
+    } catch (ser::SerializationException &serException) {
+        std::string errmsg(serException.what());
+        throw verification_exception(errmsg.substr(errmsg.find_first_of("Error:") + sizeof("Error:")).c_str());
+    }
+}
 
     /**
      * Get the refrence serializer
