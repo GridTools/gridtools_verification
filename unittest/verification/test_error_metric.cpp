@@ -41,9 +41,3 @@ TEST(error_metric, clear_separation) {
     ASSERT_TRUE(em1.equal(1.0, 1.0));
     ASSERT_FALSE(em1.equal(1.0, 2.0));
 }
-
-TEST(DISABLED_error_metric, test_close_to_limit) {
-    //    gt_verification::error_metric<> em2(1e-05);
-    //    ASSERT_TRUE(em2.equal(1.0, 1.0));
-    //    ASSERT_FALSE(em2.equal(1.0 + 2 * 1e-05, 1.0));
-}
