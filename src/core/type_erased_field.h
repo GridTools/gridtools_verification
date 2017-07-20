@@ -253,10 +253,10 @@ namespace internal {
             std::is_same< typename FieldType::storage_t::data_t, T >::value, "internal error: types do not match");
 
         type_erased_field_base(const FieldType &field)
-            : metaData_(field.meta_data().template unaligned_dim< 0 >(),
-                  field.meta_data().template unaligned_dim< 1 >(),
-                  field.meta_data().template unaligned_dim< 2 >()),
-              field_(metaData_, -1, field.get_name()) {
+            : metaData_(field.get_storage_info_ptr()->template unaligned_dim< 0 >(),
+                  field.get_storage_info_ptr()->template unaligned_dim< 1 >(),
+                  field.get_storage_info_ptr()->template unaligned_dim< 2 >()),
+              field_(metaData_, -1, field.name()) {
 
             // Update field on host
             field_helper::d2h_update(field_);
@@ -265,10 +265,11 @@ namespace internal {
             int iSize = this->i_size();
             int jSize = this->j_size();
             int kSize = this->k_size();
+            auto view = make_host_view(field);
             for (int i = 0; i < iSize; ++i)
                 for (int j = 0; j < jSize; ++j)
                     for (int k = 0; k < kSize; ++k)
-                        field_(i, j, k) = field(i, j, k);
+                        field_(i, j, k) = view(i, j, k);
         }
 
         virtual const T &access(int i, int j, int k) const noexcept override { return make_host_view(field_)(i, j, k); }
@@ -279,7 +280,7 @@ namespace internal {
 
         virtual const T *data() const noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-        virtual const char *name() const noexcept override { return field_.name(); }
+        virtual const char *name() const noexcept override { return field_.name().c_str(); }
 
         virtual int i_size() const noexcept override {
             return field_.get_storage_info_ptr()->template unaligned_dim< 0 >();
