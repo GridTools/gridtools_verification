@@ -66,6 +66,12 @@ file(GLOB_RECURSE GT_VERIFICATION_UNITTEST_HEADERS
 include_directories( src )
 file(GLOB_RECURSE GT_VERIFICATION_SOURCES "src/*.cpp")
 
+if( GRIDTOOLS_ROOT )
+  message( STATUS "GridTools is available: ${GRIDTOOLS_ROOT}/include" )
+  include_directories( ${GRIDTOOLS_ROOT}/include )
+  add_definitions(-DHAS_GRIDTOOLS)
+endif()
+
 add_library( gridtools_verification ${GT_VERIFICATION_SOURCES} )
 add_dependencies( gridtools_verification googletest serialbox )
 target_link_libraries( gridtools_verification ${Boost_LIBRARIES} )
