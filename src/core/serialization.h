@@ -189,11 +189,13 @@ class serialization : private boost::noncopyable {
         const int jMinusHaloSize = 3;
         const int jPlusHaloSize = 3;
 
+        auto typeID = serialbox::ToTypeID< T >::value;
+
         try {
             // Register field
 
             // TODO fix TypeID
-            serializer_->register_field(name, serialbox::TypeID::Float64, std::vector< int >{iSize, jSize, kSize});
+            serializer_->register_field(name, typeID, std::vector< int >{iSize, jSize, kSize});
             //            serializer_->register_field(name,
             //                ser::type_name< T >(),
             //                bytesPerElement,
