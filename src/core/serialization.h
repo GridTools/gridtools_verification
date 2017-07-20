@@ -121,10 +121,9 @@ class serialization : private boost::noncopyable {
                 "the requested field '%s' has a different type than the provided field.", name);
 
         // Deserialize field
-        int bytesPerElement = serialbox::TypeUtil::sizeOf(info.type());
-        int iStride = field.i_stride() * bytesPerElement;
-        int jStride = field.j_stride() * bytesPerElement;
-        int kStride = field.k_stride() * bytesPerElement;
+        int iStride = field.i_stride();
+        int jStride = field.j_stride();
+        int kStride = field.k_stride();
 
         std::vector< int > strides{iStride, jStride, kStride};
         // TODO check alsoPrevious
@@ -134,53 +133,17 @@ class serialization : private boost::noncopyable {
             field.update_device();
     }
 
-    template < typename Field >
-    void load_gt(const std::string &name, Field &field, const ser::savepoint &savepoint, bool alsoPrevious = false) {
-        // Make sure data is on the Host
-        field.sync();
-
-        // Get info of serialized field
-        //        const ser::field_meta_info &info = serializer_->get_field_meta_info(name);
-        //
-        //        int iSizeHalo = field.i_size();
-        //        int jSizeHalo = field.j_size();
-        //        int kSize = field.k_size();
-        //
-        //        VERIFICATION_LOG() << boost::format(" - loading %-15s (%2i, %2i, %2i)") % name % iSizeHalo % jSizeHalo
-        //        % kSize
-        //                           << logger_action::endl;
-        //
-        //        // Check dimensions
-        //        if ((info.dims()[0] != iSizeHalo) || (info.dims()[1] != jSizeHalo) || (info.dims()[2] != kSize))
-        //            throw verification_exception("the requested field '%s' has a different size than the provided
-        //            field.\n"
-        //                                         "Registered as: (%i, %i, %i)\n"
-        //                                         "Given     as: (%i, %i, %i)",
-        //                name,
-        //                info.dims()[0],
-        //                info.dims()[1],
-        //                info.dims()[2],
-        //                iSizeHalo,
-        //                jSizeHalo,
-        //                kSize);
-        //
-        //        // Check types
-        //        if (info.type() != serialbox::ToTypeID< T >::value)
-        //            throw verification_exception(
-        //                "the requested field '%s' has a different type than the provided field.", name);
-        //
-        //        // Deserialize field
-        //        int bytesPerElement = serialbox::TypeUtil::sizeOf(info.type());
-        //        int iStride = field.i_stride() * bytesPerElement;
-        //        int jStride = field.j_stride() * bytesPerElement;
-        //        int kStride = field.k_stride() * bytesPerElement;
-        //
-        //        std::vector< int > strides{iStride, jStride, kStride};
-        // TODO check alsoPrevious
-        serializer_->read(name, savepoint, field);
-
-        field.sync();
-    }
+    // TODO should look like this
+    //    template < typename Field >
+    //    void load_gt(const std::string &name, Field &field, const ser::savepoint &savepoint, bool alsoPrevious =
+    //    false) {
+    //        // Make sure data is on the Host
+    //        field.sync();
+    //
+    //        serializer_->read(name, savepoint, field);
+    //
+    //        field.sync();
+    //    }
 
     /** @} */
 
@@ -197,16 +160,11 @@ class serialization : private boost::noncopyable {
      * @throw Exception The registration failed because of an inconsistent registration due
      *                  fields with same name and different properties or a field with the same name
      *                  is already saved at the savepoint
-     * @{
      */
-    //    template < class FieldType >
-    //    void write(std::string name, FieldType &field, const ser::savepoint &savepoint) {
-    //        this->write(name, type_erased_field_view< typename FieldType::value_type >(field), savepoint);
-    //    }
-    //
-    //    template < typename T >
-    //    void write(std::string name, type_erased_field_view< T > field, const ser::savepoint &savepoint);
-    /** @} */
+    template < class FieldType >
+    void write(std::string name, FieldType &field, const ser::savepoint &savepoint) {
+        this->write(name, type_erased_field_view< typename FieldType::storage_t::data_t >(field), savepoint);
+    }
 
     template < typename T >
     void write(std::string name, type_erased_field_view< T > field, const ser::savepoint &savepoint) {
@@ -222,10 +180,9 @@ class serialization : private boost::noncopyable {
 
         VERIFICATION_LOG() << boost::format("Serializing '%s'") % name << logger_action::endl;
 
-        const int bytesPerElement = sizeof(T);
-        int iStride = field.i_stride() * bytesPerElement;
-        int jStride = field.j_stride() * bytesPerElement;
-        int kStride = field.k_stride() * bytesPerElement;
+        int iStride = field.i_stride();
+        int jStride = field.j_stride();
+        int kStride = field.k_stride();
 
         const int iMinusHaloSize = 3;
         const int iPlusHaloSize = 3;
@@ -262,23 +219,24 @@ class serialization : private boost::noncopyable {
         }
     }
 
-    template < typename Field >
-    void write_gt(std::string name, Field &field, const ser::savepoint &savepoint) {
-        // Make sure data is on the Host
-        field.sync();
-
-        if (name.empty())
-            name = field.name();
-
-        VERIFICATION_LOG() << boost::format("Serializing '%s'") % name << logger_action::endl;
-
-        try {
-            serializer_->write(name, savepoint, field);
-        } catch (ser::exception &serException) {
-            std::string errmsg(serException.what());
-            throw verification_exception(errmsg.substr(errmsg.find_first_of("Error:") + sizeof("Error:")).c_str());
-        }
-    }
+    //    template < typename Field >
+    //    void write_gt(std::string name, Field &field, const ser::savepoint &savepoint) {
+    //        // Make sure data is on the Host
+    //        field.sync();
+    //
+    //        if (name.empty())
+    //            name = field.name();
+    //
+    //        VERIFICATION_LOG() << boost::format("Serializing '%s'") % name << logger_action::endl;
+    //
+    //        try {
+    //            serializer_->write(name, savepoint, field);
+    //        } catch (ser::exception &serException) {
+    //            std::string errmsg(serException.what());
+    //            throw verification_exception(errmsg.substr(errmsg.find_first_of("Error:") +
+    //            sizeof("Error:")).c_str());
+    //        }
+    //    }
 
     /**
      * Get the reference serializer

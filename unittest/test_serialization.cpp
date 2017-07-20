@@ -105,12 +105,13 @@ TEST_F(SerializationUnittest, GridToolsToGridTools) {
     fillUniqueValues(gridToolsField1);
 
     // Write to disk
-    serialization_->write_gt("GridToolsField", gridToolsField1, savepoint_);
+    serialization_->write("GridToolsField", gridToolsField1, savepoint_);
     files_.push_back("SerializationUnittest_GridToolsField.dat");
 
     // Load from disk
     IJKRealField gridToolsField2(metaData, -1, "GridToolsField2");
-    serialization_->load_gt("GridToolsField", gridToolsField2, savepoint_);
+    //    serialization_->load_gt("GridToolsField", gridToolsField2, savepoint_);
+    serialization_->load("GridToolsField", gridToolsField2, savepoint_);
 
     auto view1 = make_host_view(gridToolsField1);
     auto view2 = make_host_view(gridToolsField2);
@@ -172,7 +173,7 @@ TEST_F(SerializationUnittest, FortranToGridTools) {
     IJKStorageInfoType metaData(iSize, jSize, kSize);
     IJKRealField gridToolsField(metaData, -1, "GridToolsField");
 
-    serialization_->load_gt("FortranField", gridToolsField, savepoint_);
+    serialization_->load("FortranField", gridToolsField, savepoint_);
 
     auto view = make_host_view(gridToolsField);
     // Verify result
