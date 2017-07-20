@@ -265,11 +265,12 @@ namespace internal {
             int iSize = this->i_size();
             int jSize = this->j_size();
             int kSize = this->k_size();
-            auto view = make_host_view(field);
+            auto src = make_host_view(field);
+            auto dst = make_host_view(field_);
             for (int i = 0; i < iSize; ++i)
                 for (int j = 0; j < jSize; ++j)
                     for (int k = 0; k < kSize; ++k)
-                        field_(i, j, k) = view(i, j, k);
+                        dst(i, j, k) = src(i, j, k);
         }
 
         virtual const T &access(int i, int j, int k) const noexcept override { return make_host_view(field_)(i, j, k); }
