@@ -50,8 +50,9 @@ link_directories(${Boost_LIBRARY_DIRS})
 #----------------- build bundled libs
 add_subdirectory( libs )
 include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${SERIALBOX_INCLUDE_DIRS})
 
+#----------------- find Serialbox2
+find_package( Serialbox REQUIRED)
 
 #----------------- Glob the headers (for IDEs)
 file(GLOB_RECURSE GT_VERIFICATION_HEADERS 
@@ -73,9 +74,9 @@ if( GRIDTOOLS_ROOT )
 endif()
 
 add_library( gridtools_verification ${GT_VERIFICATION_SOURCES} )
-add_dependencies( gridtools_verification googletest serialbox )
+add_dependencies( gridtools_verification googletest )
 target_link_libraries( gridtools_verification ${Boost_LIBRARIES} )
-target_link_libraries( gridtools_verification ${SERIALBOX_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
+target_link_libraries( gridtools_verification ${SERIALBOX_CXX_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
 target_link_libraries( gridtools_verification pthread )
 
 #----------------- install verification framework
