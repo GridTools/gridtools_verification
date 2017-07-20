@@ -271,42 +271,54 @@ namespace internal {
                         field_(i, j, k) = field(i, j, k);
         }
 
-        virtual const T &access(int i, int j, int k) const noexcept override { return field_(i, j, k); }
+        virtual const T &access(int i, int j, int k) const noexcept override { return make_host_view(field_)(i, j, k); }
 
-        virtual T &access(int i, int j, int k) noexcept override { return field_(i, j, k); }
+        virtual T &access(int i, int j, int k) noexcept override { return make_host_view(field_)(i, j, k); }
 
-        virtual T *data() noexcept override { return &field_(0, 0, 0); }
+        virtual T *data() noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-        virtual const T *data() const noexcept override { return &field_(0, 0, 0); }
+        virtual const T *data() const noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-        virtual const char *name() const noexcept override { return field_.get_name(); }
+        virtual const char *name() const noexcept override { return field_.name(); }
 
-        virtual int i_size() const noexcept override { return field_.meta_data().template unaligned_dim< 0 >(); }
+        virtual int i_size() const noexcept override {
+            return field_.get_storage_info_ptr()->template unaligned_dim< 0 >();
+        }
 
-        virtual int i_size_padded() const noexcept override { return field_.meta_data().template dim< 0 >(); }
+        virtual int i_size_padded() const noexcept override {
+            return field_.get_storage_info_ptr()->template dim< 0 >();
+        }
 
-        virtual int j_size() const noexcept override { return field_.meta_data().template unaligned_dim< 1 >(); }
+        virtual int j_size() const noexcept override {
+            return field_.get_storage_info_ptr()->template unaligned_dim< 1 >();
+        }
 
-        virtual int j_size_padded() const noexcept override { return field_.meta_data().template dim< 1 >(); }
+        virtual int j_size_padded() const noexcept override {
+            return field_.get_storage_info_ptr()->template dim< 1 >();
+        }
 
-        virtual int k_size() const noexcept override { return field_.meta_data().template unaligned_dim< 2 >(); }
+        virtual int k_size() const noexcept override {
+            return field_.get_storage_info_ptr()->template unaligned_dim< 2 >();
+        }
 
-        virtual int k_size_padded() const noexcept override { return field_.meta_data().template dim< 2 >(); }
+        virtual int k_size_padded() const noexcept override {
+            return field_.get_storage_info_ptr()->template dim< 2 >();
+        }
 
-        virtual int i_stride() const noexcept override { return field_.meta_data().template strides< 0 >(); }
+        virtual int i_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 0 >(); }
 
-        virtual int j_stride() const noexcept override { return field_.meta_data().template strides< 1 >(); }
+        virtual int j_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 1 >(); }
 
-        virtual int k_stride() const noexcept override { return field_.meta_data().template strides< 2 >(); }
+        virtual int k_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 2 >(); }
 
         virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
 
         virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
 
-        virtual bool is_on_host() const noexcept override { return field_.is_on_host(); }
+        virtual bool is_on_host() const noexcept override { return false; }
 
       private:
-        typename FieldType::storage_info_type metaData_;
+        typename FieldType::storage_info_t metaData_;
         FieldType field_;
     };
 
