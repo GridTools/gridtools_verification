@@ -38,7 +38,7 @@
 #include <cstdlib>
 #include <iostream>
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 logger *logger::instance_ = nullptr;
 
@@ -54,4 +54,4 @@ logger::logger() : flushed_(true), outStream_(std::clog), enable_(false) {
     enable_ = envDycoreLog && (std::atoi(envDycoreLog) > 0);
 }
 
-GT_VERIFICATION_NAMESPACE_END
+}

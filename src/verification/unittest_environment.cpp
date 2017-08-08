@@ -1,6 +1,6 @@
 #include "unittest_environment.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 unittest_environment *unittest_environment::instance_ = nullptr;
 
@@ -48,4 +48,4 @@ void unittest_environment::print_skipped_tests() const noexcept {
     }
 }
 
-GT_VERIFICATION_NAMESPACE_END
+}

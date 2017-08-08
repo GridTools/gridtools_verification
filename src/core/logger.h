@@ -41,7 +41,7 @@
 #include <ostream>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @defgroup Logger
@@ -170,4 +170,4 @@ class logger : private boost::noncopyable /* singleton */
  */
 #define VERIFICATION_LOG() (logger::getInstance() << logger_action::newlog)
 
-GT_VERIFICATION_NAMESPACE_END
+}

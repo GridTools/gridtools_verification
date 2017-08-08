@@ -39,7 +39,7 @@
 #include <string>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Handle command-line arguments
@@ -86,4 +86,4 @@ class command_line {
     boost::program_options::options_description desc_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

@@ -44,7 +44,7 @@
 #include <cstdlib>
 #include <string>
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 verification_specification::verification_specification(command_line &cl) {
     parse(cl.has("error") ? cl.as< std::string >("error") : std::string());
@@ -244,4 +244,4 @@ void verification_specification::parse(std::string errorStr) {
     kIntervalSpecified_ = !kInterval_.empty();
 }
 
-GT_VERIFICATION_NAMESPACE_END
+}

@@ -8,7 +8,7 @@
 #include "../core/command_line.h"
 #include "../core/error.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 template < typename Environment >
 int gridtools_verification_main(int argc, char *argv[], std::string data_name) {
@@ -35,4 +35,4 @@ int gridtools_verification_main(int argc, char *argv[], std::string data_name) {
     return ret;
 }
 
-GT_VERIFICATION_NAMESPACE_END
+}

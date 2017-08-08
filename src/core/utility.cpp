@@ -36,7 +36,7 @@
 #include <boost/tokenizer.hpp>
 #include "utility.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 std::string split_string(const std::string &str, std::size_t lineSize, std::size_t indentSize) noexcept {
     // Tokenize string
@@ -95,4 +95,4 @@ std::vector< std::string > tokenize_string(const std::string &str, std::string d
 #endif
     return tokensVector;
 }
-GT_VERIFICATION_NAMESPACE_END
+}

@@ -50,7 +50,7 @@
 #include "error_metric.h"
 #include "verification_result.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Verify if an output field (produced by a stencil) and a reference field (loaded from disk)
@@ -189,4 +189,4 @@ class verification {
     std::vector< failure > failures_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

@@ -35,7 +35,7 @@
 */
 #include "color.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 namespace internal {
 
@@ -75,4 +75,4 @@ namespace internal {
     }
 }
 
-GT_VERIFICATION_NAMESPACE_END
+}

@@ -41,7 +41,7 @@
 #include "../core/command_line.h"
 #include "verification.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Specify the behaviour how errors are being reported
@@ -161,4 +161,4 @@ class verification_specification {
     bool kIntervalSpecified_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

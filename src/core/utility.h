@@ -39,7 +39,7 @@
 #include <vector>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Split a string over multiple lines
@@ -69,4 +69,4 @@ std::string split_string(const std::string &str, std::size_t lineSize = 80, std:
  */
 std::vector< std::string > tokenize_string(const std::string &str, std::string delim) noexcept;
 
-GT_VERIFICATION_NAMESPACE_END
+}

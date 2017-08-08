@@ -52,7 +52,7 @@
 #include "../core/utility.h"
 #include "error_metric.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Report errors to console
@@ -206,4 +206,4 @@ class verification_reporter : private boost::noncopyable {
     verification_specification verifSpec_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

@@ -41,7 +41,7 @@
 #include <cstdio>
 #include <cstdlib>
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @defgroup colors
@@ -122,4 +122,4 @@ inline void cprintf(color color, const char *fmt, Args &&... args) {
 
 /** @} */
 
-GT_VERIFICATION_NAMESPACE_END
+}

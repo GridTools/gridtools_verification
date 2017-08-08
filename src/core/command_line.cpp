@@ -44,7 +44,7 @@
 
 namespace po = boost::program_options;
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 command_line::command_line(int argc, const char *const argv[]) : desc_("Options") {
     desc_.add_options()
@@ -101,4 +101,4 @@ void command_line::print_help(char *currentExecutable) const noexcept {
     std::exit(EXIT_SUCCESS);
 }
 
-GT_VERIFICATION_NAMESPACE_END
+}

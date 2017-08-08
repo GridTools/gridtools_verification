@@ -39,7 +39,7 @@
 #include <iostream>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Interface to handle runtime errors
@@ -71,4 +71,4 @@ struct error : private boost::noncopyable {
     }
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

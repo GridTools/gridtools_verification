@@ -44,7 +44,7 @@
 #include "error.h"
 #include "logger.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 namespace ser = serialbox::gridtools;
 
@@ -190,4 +190,4 @@ class serialization : private boost::noncopyable {
     std::shared_ptr< ser::serializer > serializer_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

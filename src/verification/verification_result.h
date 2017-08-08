@@ -39,7 +39,7 @@
 #include <string>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Store the result of a verification test (returned by @ref Verification::verify())
@@ -107,4 +107,4 @@ class verification_result {
     std::string msg_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

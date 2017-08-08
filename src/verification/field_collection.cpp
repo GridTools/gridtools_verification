@@ -35,9 +35,9 @@
 */
 #include "field_collection.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 template class field_collection< float >;
 template class field_collection< double >;
 
-GT_VERIFICATION_NAMESPACE_END
+}

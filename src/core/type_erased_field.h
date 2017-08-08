@@ -42,7 +42,7 @@
 #include <boost/type_traits.hpp>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 namespace internal {
 
@@ -533,4 +533,4 @@ class type_erased_field {
     std::shared_ptr< internal::type_erased_field_interface< T > > base_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}

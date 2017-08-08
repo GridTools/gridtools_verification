@@ -38,7 +38,7 @@
 #include <cmath>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
 /**
  * @brief Define a metric to compare real numbers within the given absolute and relative tolerance
@@ -79,4 +79,4 @@ class error_metric {
     T atol_;
 };
 
-GT_VERIFICATION_NAMESPACE_END
+}
