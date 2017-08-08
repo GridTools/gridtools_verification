@@ -36,8 +36,6 @@
 #include "field_collection.h"
 
 namespace gt_verification {
-
-template class field_collection< float >;
-template class field_collection< double >;
-
+    template class field_collection< float >;
+    template class field_collection< double >;
 }

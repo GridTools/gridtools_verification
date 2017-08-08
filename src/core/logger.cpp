@@ -40,18 +40,17 @@
 
 namespace gt_verification {
 
-logger *logger::instance_ = nullptr;
+    logger *logger::instance_ = nullptr;
 
-logger &logger::getInstance() {
-    if (!instance_)
-        instance_ = new logger;
-    return (*instance_);
-}
+    logger &logger::getInstance() {
+        if (!instance_)
+            instance_ = new logger;
+        return (*instance_);
+    }
 
-logger::logger() : flushed_(true), outStream_(std::clog), enable_(false) {
-    // Check environment variable
-    const char *envDycoreLog = std::getenv("VERIFICATION_LOG"); // FIXME
-    enable_ = envDycoreLog && (std::atoi(envDycoreLog) > 0);
-}
-
+    logger::logger() : flushed_(true), outStream_(std::clog), enable_(false) {
+        // Check environment variable
+        const char *envDycoreLog = std::getenv("VERIFICATION_LOG"); // FIXME
+        enable_ = envDycoreLog && (std::atoi(envDycoreLog) > 0);
+    }
 }

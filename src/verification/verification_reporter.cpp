@@ -36,8 +36,6 @@
 #include "verification_reporter.h"
 
 namespace gt_verification {
-
-template void verification_reporter::report< float >(const verification< float > &Verification) const noexcept;
-template void verification_reporter::report< double >(const verification< double > &Verification) const noexcept;
-
+    template void verification_reporter::report< float >(const verification< float > &Verification) const noexcept;
+    template void verification_reporter::report< double >(const verification< double > &Verification) const noexcept;
 }
