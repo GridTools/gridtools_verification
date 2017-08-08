@@ -42,12 +42,6 @@
 #include <boost/type_traits.hpp>
 #include "../common.h"
 
-// FIXME forward
-namespace gridtools {
-    template < typename T, bool B >
-    struct hybrid_pointer;
-}
-
 GT_VERIFICATION_NAMESPACE_BEGIN
 
 namespace internal {

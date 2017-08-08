@@ -65,8 +65,7 @@ class serialization : private boost::noncopyable {
     /**
      * @brief Load the a field and store it in the provided field
      *
-     * The field will be synchronized to the host before being accessed. However, the field is
-     * @b not synchronized back to the device in the end.
+     * The field will be synchronized between host and device before and after the operation.
      *
      * @param name      Name of the desired field
      * @param field     Field in which the data is going to be loaded to
@@ -76,18 +75,12 @@ class serialization : private boost::noncopyable {
      * @{
      */
     template < class FieldType >
-    void load(const std::string &name, FieldType &field, const ser::savepoint &savepoint, bool alsoPrevious = false) {
-        this->load(
-            name, type_erased_field_view< typename FieldType::storage_t::data_t >(field), savepoint, alsoPrevious);
+    void load(const std::string &name, FieldType &field, const ser::savepoint &savepoint) {
+        this->load(name, type_erased_field_view< typename FieldType::storage_t::data_t >(field), savepoint);
     }
 
     template < typename T >
-    void load(const std::string &name,
-        type_erased_field_view< T > field,
-        const ser::savepoint &savepoint,
-        bool alsoPrevious = false) {
-
-        // Make sure data is on the Host
+    void load(const std::string &name, type_erased_field_view< T > field, const ser::savepoint &savepoint) {
         field.sync();
 
         // Get info of serialized field
@@ -124,23 +117,10 @@ class serialization : private boost::noncopyable {
         int kStride = field.k_stride();
 
         std::vector< int > strides{iStride, jStride, kStride};
-        // TODO check alsoPrevious
         serializer_->read(name, savepoint, field.data(), strides);
 
         field.sync();
     }
-
-    // TODO should look like this
-    //    template < typename Field >
-    //    void load_gt(const std::string &name, Field &field, const ser::savepoint &savepoint, bool alsoPrevious =
-    //    false) {
-    //        // Make sure data is on the Host
-    //        field.sync();
-    //
-    //        serializer_->read(name, savepoint, field);
-    //
-    //        field.sync();
-    //    }
 
     /** @} */
 
@@ -200,25 +180,6 @@ class serialization : private boost::noncopyable {
             throw verification_exception(errmsg.substr(errmsg.find_first_of("Error:") + sizeof("Error:")).c_str());
         }
     }
-
-    //    template < typename Field >
-    //    void write_gt(std::string name, Field &field, const ser::savepoint &savepoint) {
-    //        // Make sure data is on the Host
-    //        field.sync();
-    //
-    //        if (name.empty())
-    //            name = field.name();
-    //
-    //        VERIFICATION_LOG() << boost::format("Serializing '%s'") % name << logger_action::endl;
-    //
-    //        try {
-    //            serializer_->write(name, savepoint, field);
-    //        } catch (ser::exception &serException) {
-    //            std::string errmsg(serException.what());
-    //            throw verification_exception(errmsg.substr(errmsg.find_first_of("Error:") +
-    //            sizeof("Error:")).c_str());
-    //        }
-    //    }
 
     /**
      * Get the reference serializer
