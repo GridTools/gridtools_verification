@@ -52,51 +52,6 @@ GT_VERIFICATION_NAMESPACE_BEGIN
 
 namespace internal {
 
-    // FIXME should be removed with the new storage (copied from gridtools/common/pointer_metafunctions.hpp)
-    namespace {
-        template < typename T >
-        struct remove_ref_cv {
-            typedef typename boost::remove_reference< typename boost::remove_cv< T >::type >::type type;
-        };
-
-        //        template < typename T >
-        //        struct is_hybrid_pointer_impl : boost::mpl::false_ {};
-        //
-        //        template < typename T >
-        //        struct is_hybrid_pointer_impl< gridtools::hybrid_pointer< T, false > > : boost::mpl::true_ {};
-        //
-        //        template < typename T >
-        //        struct is_hybrid_pointer_impl< gridtools::hybrid_pointer< T, true > > : boost::mpl::true_ {};
-        //
-        //        template < typename T >
-        //        struct is_hybrid_pointer : is_hybrid_pointer_impl< typename remove_ref_cv< T >::type > {};
-        //
-        //        template < typename FieldType >
-        //        struct is_cuda_storage : is_hybrid_pointer< typename FieldType::super::pointer_type > {};
-    }
-
-    namespace field_helper {
-        template < typename FieldType >
-        struct field_helper_impl {
-            static void h2d_update(FieldType &field) { field.sync(); }
-            static void d2h_update(FieldType &field) { field.sync(); }
-            static void set_on_device(FieldType &field) { field.sync(); }
-        };
-
-        template < typename FieldType >
-        void h2d_update(FieldType &field) {
-            field_helper_impl< FieldType >::h2d_update(field);
-        }
-        template < typename FieldType >
-        void d2h_update(FieldType &field) {
-            field_helper_impl< FieldType >::d2h_update(field);
-        }
-        template < typename FieldType >
-        void set_on_device(FieldType &field) {
-            field_helper_impl< FieldType >::set_on_device(field);
-        }
-    }
-
     /**
      * Type erased interface for GridTools fields with value_type T
      */
@@ -176,16 +131,9 @@ namespace internal {
         virtual int k_stride() const noexcept = 0;
 
         /**
-         * Update device pointer (calls h2d_update)
+         * Sync host and device
          */
-        virtual void update_device() noexcept = 0;
-
-        /**
-         * Update host pointer (calls d2h_update)
-         */
-        virtual void update_host() noexcept = 0;
-
-        virtual bool is_on_host() const noexcept = 0;
+        virtual void sync() noexcept = 0;
     };
 
     template < typename FieldType, typename T >
@@ -236,11 +184,7 @@ namespace internal {
 
         virtual int k_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 2 >(); }
 
-        virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
-
-        virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
-
-        virtual bool is_on_host() const noexcept override { return false; }
+        virtual void sync() noexcept override { field_.sync(); }
 
       private:
         FieldType &field_;
@@ -259,7 +203,7 @@ namespace internal {
               field_(metaData_, -1, field.name()) {
 
             // Update field on host
-            field_helper::d2h_update(field_);
+            field_.sync();
 
             // Copy field
             int iSize = this->i_size();
@@ -313,11 +257,7 @@ namespace internal {
 
         virtual int k_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 2 >(); }
 
-        virtual void update_device() noexcept override { field_helper::h2d_update(field_); }
-
-        virtual void update_host() noexcept override { field_helper::d2h_update(field_); }
-
-        virtual bool is_on_host() const noexcept override { return false; }
+        virtual void sync() noexcept override { field_.sync(); }
 
       private:
         typename FieldType::storage_info_t metaData_;
@@ -462,16 +402,9 @@ class type_erased_field_view {
     std::string name() const noexcept { return std::string(base_->name()); }
 
     /**
-     * @brief Update device pointer (calls h2d_update)
+     * @brief Sync host and device
      */
-    void update_device() const noexcept { base_->update_device(); }
-
-    /**
-     * @brief Update host pointer (calls d2h_update)
-     */
-    void update_host() const noexcept { base_->update_host(); }
-
-    bool is_on_host() const noexcept { return base_->is_on_host(); }
+    void sync() const noexcept { base_->sync(); }
 
   private:
     std::shared_ptr< internal::type_erased_field_interface< T > > base_;
@@ -593,16 +526,9 @@ class type_erased_field {
     std::string name() const noexcept { return std::string(base_->name()); }
 
     /**
-     * @brief Update device pointer (calls h2d_update)
+     * @brief Sync host and device
      */
-    void update_device() noexcept { base_->update_device(); }
-
-    /**
-     * @brief Update host pointer (calls d2h_update)
-     */
-    void update_host() const noexcept { base_->update_host(); }
-
-    bool is_on_host() const noexcept { return base_->is_on_host(); }
+    void sync() const noexcept { base_->sync(); }
 
     /**
      * @brief Convert field to view

@@ -87,10 +87,8 @@ class serialization : private boost::noncopyable {
         const ser::savepoint &savepoint,
         bool alsoPrevious = false) {
 
-        bool field_was_on_device = !field.is_on_host();
-
         // Make sure data is on the Host
-        field.update_host();
+        field.sync();
 
         // Get info of serialized field
         const ser::field_meta_info &info = serializer_->get_field_meta_info(name);
@@ -129,8 +127,7 @@ class serialization : private boost::noncopyable {
         // TODO check alsoPrevious
         serializer_->read(name, savepoint, field.data(), strides);
 
-        if (field_was_on_device)
-            field.update_device();
+        field.sync();
     }
 
     // TODO should look like this
@@ -169,7 +166,7 @@ class serialization : private boost::noncopyable {
     template < typename T >
     void write(std::string name, type_erased_field_view< T > field, const ser::savepoint &savepoint) {
         // Make sure data is on the Host
-        field.update_host();
+        field.sync();
 
         if (name.empty())
             name = field.name();
@@ -193,24 +190,7 @@ class serialization : private boost::noncopyable {
 
         try {
             // Register field
-
-            // TODO fix TypeID
             serializer_->register_field(name, typeID, std::vector< int >{iSize, jSize, kSize});
-            //            serializer_->register_field(name,
-            //                ser::type_name< T >(),
-            //                bytesPerElement,
-            //                iSize,
-            //                jSize,
-            //                kSize,
-            //                1,
-            //                iMinusHaloSize, // FIXME
-            //                iPlusHaloSize,
-            //                jMinusHaloSize,
-            //                jPlusHaloSize,
-            //                0,
-            //                0,
-            //                0,
-            //                0);
 
             // Write field to disk
             std::vector< int > strides{iStride, jStride, kStride};

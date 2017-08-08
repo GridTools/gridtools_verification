@@ -99,8 +99,8 @@ class verification {
      */
     verification_result verify() noexcept {
         // Sync fields with Host
-        outputField_.update_host();
-        referenceField_.update_host();
+        outputField_.sync();
+        referenceField_.sync();
 
         failures_.clear();
 
