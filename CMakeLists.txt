@@ -12,12 +12,9 @@ include(ExternalProject)
 
 #----------------- CMake options
 # C++11 compiler support
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if(NOT(COMPILER_SUPPORTS_CXX11))
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
-endif(NOT(COMPILER_SUPPORTS_CXX11))
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+## Set C++ standard to C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Do we use terminal colors?
 set(GT_VERIFICATION_USE_COLOR "ON" CACHE BOOL "Enable colored terminal output")
