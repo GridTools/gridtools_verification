@@ -35,7 +35,7 @@
 */
 #include "error.h"
 #include "command_line.h"
-#include <boost/format.hpp>
+#include "include_boost_format.h"
 #include <cstdlib>
 #include <iostream>
 #include <string>

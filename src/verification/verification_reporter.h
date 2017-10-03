@@ -42,7 +42,7 @@
 #include <initializer_list>
 #include <limits>
 #include <numeric>
-#include <boost/format.hpp>
+#include "../core/include_boost_format.h"
 #include "../common.h"
 #include "verification_specification.h"
 #include "verification.h"

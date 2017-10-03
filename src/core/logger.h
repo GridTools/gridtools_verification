@@ -35,7 +35,7 @@
 */
 #pragma once
 
-#include <boost/format.hpp>
+#include "include_boost_format.h"
 #include <chrono>
 #include <cstdio>
 #include <ostream>

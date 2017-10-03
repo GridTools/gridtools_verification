@@ -43,7 +43,7 @@
 #pragma once
 
 #include <vector>
-#include <boost/format.hpp>
+#include "../core/include_boost_format.h"
 #include "../common.h"
 #include "../core/type_erased_field.h"
 #include "boundary_extent.h"

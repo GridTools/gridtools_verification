@@ -33,57 +33,15 @@
 
   For information: http://eth-cscs.github.io/gridtools/
 */
-
 #pragma once
 
-#include "core/include_boost_format.h"
-#include <stdexcept>
-#include "common.h"
-
-namespace gt_verification {
-
-    namespace {
-
-        /**
-         * Expand variadic arguments
-         */
-        template < typename... Args >
-        std::string format_vargs(std::string const &fmt, Args &&... args) {
-            boost::format f(fmt);
-            int unroll[]{0, (f % std::forward< Args >(args), 0)...};
-            static_cast< void >(unroll);
-            return boost::str(f);
-        }
-    }
-
-    /**
-     * @brief Simple exception class which stores a human-readable error description
-     *
-     * Creates a @c std::runtime_error with @c std::runtime_error::what() set to the formatted
-     * string.
-     *
-     * @code{.cpp}
-     * try
-     * {
-     *     throw Exception("Nope! The answer should be %i", 42);
-     * }
-     * catch(Exception& e)
-     * {
-     *    std::cout << "Caught a dycore::Exception saying: " << e.what() << std::endl;
-     * }
-     * @endcode
-     *
-     */
-    class verification_exception : public std::runtime_error {
-      public:
-        /**
-         * @brief Variadic constructor to support printf-style arguments
-         *
-         * @param fmt   Printf like format string
-         * @param args  Arguments specifying data to print
-         */
-        template < typename... Args >
-        verification_exception(const char *fmt, const Args &... args)
-            : std::runtime_error(format_vargs(fmt, args...)) {}
-    };
-}
+// In boost 1.58 there is a problem with BOOST_NO_CXX11_DECLTYPE when including boost/format.hpp
+#ifdef BOOST_NO_CXX11_DECLTYPE
+#undef BOOST_NO_CXX11_DECLTYPE
+#define BOOST_NO_CXX11_DECLTYPE_WAS_DEFINED
+#endif
+#include <boost/format.hpp>
+#ifdef BOOST_NO_CXX11_DECLTYPE_WAS_DEFINED
+#undef BOOST_NO_CXX11_DECLTYPE_WAS_DEFINED
+#define BOOST_NO_CXX11_DECLTYPE
+#endif
