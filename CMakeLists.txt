@@ -49,7 +49,7 @@ add_subdirectory( libs )
 include_directories(${GTEST_INCLUDE_DIRS})
 
 #----------------- find Serialbox2
-find_package( Serialbox REQUIRED)
+find_package( Serialbox 2.1.0 REQUIRED )
 include_directories( ${SERIALBOX_INCLUDE_DIRS} )
 
 #----------------- Glob the headers (for IDEs)
