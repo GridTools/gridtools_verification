@@ -12,12 +12,9 @@ include(ExternalProject)
 
 #----------------- CMake options
 # C++11 compiler support
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-if(NOT(COMPILER_SUPPORTS_CXX11))
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support.")
-endif(NOT(COMPILER_SUPPORTS_CXX11))
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+## Set C++ standard to C++11
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Do we use terminal colors?
 set(GT_VERIFICATION_USE_COLOR "ON" CACHE BOOL "Enable colored terminal output")
@@ -50,8 +47,10 @@ link_directories(${Boost_LIBRARY_DIRS})
 #----------------- build bundled libs
 add_subdirectory( libs )
 include_directories(${GTEST_INCLUDE_DIRS})
-include_directories(${SERIALBOX_INCLUDE_DIRS})
 
+#----------------- find Serialbox2
+find_package( Serialbox 2.1.0 REQUIRED )
+include_directories( ${SERIALBOX_INCLUDE_DIRS} )
 
 #----------------- Glob the headers (for IDEs)
 file(GLOB_RECURSE GT_VERIFICATION_HEADERS 
@@ -73,9 +72,9 @@ if( GRIDTOOLS_ROOT )
 endif()
 
 add_library( gridtools_verification ${GT_VERIFICATION_SOURCES} )
-add_dependencies( gridtools_verification googletest serialbox )
+add_dependencies( gridtools_verification googletest )
 target_link_libraries( gridtools_verification ${Boost_LIBRARIES} )
-target_link_libraries( gridtools_verification ${SERIALBOX_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
+target_link_libraries( gridtools_verification ${SERIALBOX_CXX_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
 target_link_libraries( gridtools_verification pthread )
 
 #----------------- install verification framework

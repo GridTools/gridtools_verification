@@ -51,7 +51,7 @@ class test_Verification : public ::testing::Test {
     int jSize = 22;
     int kSize = 80;
 
-    IJKMetaStorageType metaData;
+    IJKStorageInfoType metaData;
     IJKRealField outField;
     IJKRealField refField;
 

@@ -33,9 +33,15 @@
 
   For information: http://eth-cscs.github.io/gridtools/
 */
-#include "field_collection.h"
+#pragma once
 
-namespace gt_verification {
-    template class field_collection< float >;
-    template class field_collection< double >;
-}
+// In boost 1.58 there is a problem with BOOST_NO_CXX11_DECLTYPE when including boost/format.hpp
+#ifdef BOOST_NO_CXX11_DECLTYPE
+#undef BOOST_NO_CXX11_DECLTYPE
+#define BOOST_NO_CXX11_DECLTYPE_WAS_DEFINED
+#endif
+#include <boost/format.hpp>
+#ifdef BOOST_NO_CXX11_DECLTYPE_WAS_DEFINED
+#undef BOOST_NO_CXX11_DECLTYPE_WAS_DEFINED
+#define BOOST_NO_CXX11_DECLTYPE
+#endif

@@ -38,45 +38,44 @@
 #include <cmath>
 #include "../common.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
-
-/**
- * @brief Define a metric to compare real numbers within the given absolute and relative tolerance
- *
- * The tolerance values are positive, typically very small numbers. To compare two real numbers a
- * and b, the relative difference (rtol * abs(b)) and the absolute difference atol are added
- * together to compare against the absolute difference between a and b.
- *
- * @f[
- * |a - b| \leq (\texttt{atol} + \texttt{rtol} \cdot |b|)
- * @f]
- *
- * @ingroup DycoreUnittestVerificationLibrary
- */
-template < typename T >
-class error_metric {
-  public:
-    error_metric(const error_metric &) = default;
-    error_metric &operator=(const error_metric &) = default;
+namespace gt_verification {
 
     /**
-     * @brief Initialize the ErrorMetric with the relative and absolute tolerance
+     * @brief Define a metric to compare real numbers within the given absolute and relative tolerance
      *
-     * @param rtol  Relative tolerance
-     * @param atol  Absolute tolerance
-     */
-    error_metric(T rtol, T atol) : rtol_(rtol), atol_(atol) {}
-
-    /**
-     * @brief Check if two real numbers @c a and @c b are equal within a tolerance
+     * The tolerance values are positive, typically very small numbers. To compare two real numbers a
+     * and b, the relative difference (rtol * abs(b)) and the absolute difference atol are added
+     * together to compare against the absolute difference between a and b.
      *
-     * @return true iff absolute(a - b) <= (atol + rtol * absolute(b))
+     * @f[
+     * |a - b| \leq (\texttt{atol} + \texttt{rtol} \cdot |b|)
+     * @f]
+     *
+     * @ingroup DycoreUnittestVerificationLibrary
      */
-    inline bool equal(T a, T b) const noexcept { return (std::fabs(a - b) <= (atol_ + rtol_ * std::fabs(b))); }
+    template < typename T >
+    class error_metric {
+      public:
+        error_metric(const error_metric &) = default;
+        error_metric &operator=(const error_metric &) = default;
 
-  private:
-    T rtol_;
-    T atol_;
-};
+        /**
+         * @brief Initialize the ErrorMetric with the relative and absolute tolerance
+         *
+         * @param rtol  Relative tolerance
+         * @param atol  Absolute tolerance
+         */
+        error_metric(T rtol, T atol) : rtol_(rtol), atol_(atol) {}
 
-GT_VERIFICATION_NAMESPACE_END
+        /**
+         * @brief Check if two real numbers @c a and @c b are equal within a tolerance
+         *
+         * @return true iff absolute(a - b) <= (atol + rtol * absolute(b))
+         */
+        inline bool equal(T a, T b) const noexcept { return (std::fabs(a - b) <= (atol_ + rtol_ * std::fabs(b))); }
+
+      private:
+        T rtol_;
+        T atol_;
+    };
+}

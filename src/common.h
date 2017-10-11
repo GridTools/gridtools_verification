@@ -35,7 +35,4 @@
 */
 #pragma once
 
-#define GT_VERIFICATION_NAMESPACE_BEGIN namespace gt_verification {
-#define GT_VERIFICATION_NAMESPACE_END }
-
 #include <boost/core/noncopyable.hpp>

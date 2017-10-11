@@ -35,44 +35,43 @@
 */
 #include "color.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
+namespace gt_verification {
 
-namespace internal {
+    namespace internal {
 
-    const char *colorToVT100(color color_) {
-        switch (color_) {
-        case color::RED:
-            return "31";
-        case color::GREEN:
-            return "32";
-        case color::YELLOW:
-            return "33";
-        case color::BOLDWHITE:
-            return "01";
-        default:
-            return "00";
+        const char *colorToVT100(color color_) {
+            switch (color_) {
+            case color::RED:
+                return "31";
+            case color::GREEN:
+                return "32";
+            case color::YELLOW:
+                return "33";
+            case color::BOLDWHITE:
+                return "01";
+            default:
+                return "00";
+            }
+        }
+
+        bool usecoloredOutput(FILE *stream) {
+#ifndef DYCORE_NO_COLOR
+            int fd = fileno(stream);
+            bool isAtty = isatty(fd);
+
+            const char *const term = getenv("TERM");
+
+            // It may happen that TERM is undefined, then just cross fingers
+            if (term == NULL)
+                return isAtty;
+            return isAtty && ((strcmp(term, "xterm") == 0) || (strcmp(term, "xterm-color") == 0) ||
+                                 (strcmp(term, "xterm-256color") == 0) || (strcmp(term, "screen") == 0) ||
+                                 (strcmp(term, "screen-256color") == 0) || (strcmp(term, "rxvt-unicode") == 0) ||
+                                 (strcmp(term, "rxvt-unicode-256color") == 0) || (strcmp(term, "linux") == 0) ||
+                                 (strcmp(term, "cygwin") == 0));
+#else
+            return false;
+#endif
         }
     }
-
-    bool usecoloredOutput(FILE *stream) {
-#ifndef DYCORE_NO_COLOR
-        int fd = fileno(stream);
-        bool isAtty = isatty(fd);
-
-        const char *const term = getenv("TERM");
-
-        // It may happen that TERM is undefined, then just cross fingers
-        if (term == NULL)
-            return isAtty;
-        return isAtty && ((strcmp(term, "xterm") == 0) || (strcmp(term, "xterm-color") == 0) ||
-                             (strcmp(term, "xterm-256color") == 0) || (strcmp(term, "screen") == 0) ||
-                             (strcmp(term, "screen-256color") == 0) || (strcmp(term, "rxvt-unicode") == 0) ||
-                             (strcmp(term, "rxvt-unicode-256color") == 0) || (strcmp(term, "linux") == 0) ||
-                             (strcmp(term, "cygwin") == 0));
-#else
-        return false;
-#endif
-    }
 }
-
-GT_VERIFICATION_NAMESPACE_END

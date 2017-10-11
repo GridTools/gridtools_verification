@@ -35,9 +35,7 @@
 */
 #include "verification_reporter.h"
 
-GT_VERIFICATION_NAMESPACE_BEGIN
-
-template void verification_reporter::report< float >(const verification< float > &Verification) const noexcept;
-template void verification_reporter::report< double >(const verification< double > &Verification) const noexcept;
-
-GT_VERIFICATION_NAMESPACE_END
+namespace gt_verification {
+    template void verification_reporter::report< float >(const verification< float > &Verification) const noexcept;
+    template void verification_reporter::report< double >(const verification< double > &Verification) const noexcept;
+}
