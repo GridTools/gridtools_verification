@@ -6,9 +6,11 @@ SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install/" CACHE PATH "installation
 
 project(gridtools-verification CXX C)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
 
 include(ExternalProject)
+
+set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.2")
+set(SERIALBOX_VERSION_REQUIRED "2.1.0")
 
 #----------------- CMake options
 # C++11 compiler support
@@ -34,23 +36,18 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     add_definitions(-DDEBUG)
 endif(CMAKE_BUILD_TYPE MATCHES "Debug")
 
-#----------------- Boost
-find_package(Boost 1.58 COMPONENTS system program_options REQUIRED)
 
-if(NOT(${Boost_FOUND}))
-    message(FATAL_ERROR "Boost not found or insufficient version.")
-endif(NOT(${Boost_FOUND}))
-
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIRS})
+#----------------- find Serialbox2
+find_package( Serialbox "${SERIALBOX_VERSION_REQUIRED}" REQUIRED HINTS
+    "${CMAKE_CURRENT_LIST_DIR}/../serialbox2/install/cmake"
+    "${SERIALBOX_ROOT}/cmake"
+    "${SERIALBOX_DIR}/cmake"
+    "$ENV{SERIALBOX_ROOT}/cmake")
+include_directories(${SERIALBOX_INCLUDE_DIRS})
 
 #----------------- build bundled libs
 add_subdirectory( libs )
 include_directories(${GTEST_INCLUDE_DIRS})
-
-#----------------- find Serialbox2
-find_package( Serialbox 2.1.0 REQUIRED )
-include_directories( ${SERIALBOX_INCLUDE_DIRS} )
 
 #----------------- Glob the headers (for IDEs)
 file(GLOB_RECURSE GT_VERIFICATION_HEADERS 
@@ -81,5 +78,8 @@ target_link_libraries( gridtools_verification pthread )
 install( TARGETS gridtools_verification DESTINATION "lib" EXPORT gridtools_verification )
 install( DIRECTORY src/ DESTINATION "include/gridtools_verification" FILES_MATCHING PATTERN "*.h" )
 install( EXPORT gridtools_verification DESTINATION lib/gridtools_verification )
+
+#----------------- packaging
+include(cmake/Packaging.cmake)
 
 add_subdirectory(unittest)
