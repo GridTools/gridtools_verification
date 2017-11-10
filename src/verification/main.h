@@ -11,7 +11,7 @@
 namespace gt_verification {
 
     template < typename Environment >
-    int gridtools_verification_main(int argc, char *argv[], std::string data_name) {
+    int gridtools_verification_main(int argc, char *argv[], std::string data_name, const std::string archive_type="Binary") {
         // Pass command line arguments to googletest
         testing::InitGoogleTest(&argc, argv);
 
@@ -28,7 +28,7 @@ namespace gt_verification {
             error::fatal("benchmark specification (--benchmark) in unittest executable");
 
         // Register test environment
-        Environment::instance_ = (Environment *)testing::AddGlobalTestEnvironment(new Environment(cl, data_name));
+        Environment::instance_ = (Environment *)testing::AddGlobalTestEnvironment(new Environment(cl, data_name, archive_type));
 
         // Run all tests
         int ret = RUN_ALL_TESTS();
