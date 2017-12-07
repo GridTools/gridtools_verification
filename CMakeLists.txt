@@ -73,6 +73,7 @@ add_dependencies( gridtools_verification googletest )
 target_link_libraries( gridtools_verification ${Boost_LIBRARIES} )
 target_link_libraries( gridtools_verification ${SERIALBOX_CXX_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
 target_link_libraries( gridtools_verification pthread )
+target_compile_definitions( gridtools_verification PRIVATE "-DBOOST_SYSTEM_NO_DEPRECATED" )
 
 #----------------- install verification framework
 install( TARGETS gridtools_verification DESTINATION "lib" EXPORT gridtools_verification )
