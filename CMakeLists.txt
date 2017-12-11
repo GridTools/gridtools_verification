@@ -45,6 +45,12 @@ find_package( Serialbox "${SERIALBOX_VERSION_REQUIRED}" REQUIRED HINTS
     "$ENV{SERIALBOX_ROOT}/cmake")
 include_directories(${SERIALBOX_INCLUDE_DIRS})
 
+#----------------- find boost
+set( Boost_NO_SYSTEM_PATHS ON )
+set( BOOST_INCLUDEDIR "${SERIALBOX_BOOST_INCLUDE_DIRS}" ) 
+set( REQUIRED_BOOST_COMPONENTS ${SERIALBOX_REQUIRED_BOOST_COMPONENTS} program_options system)
+find_package( Boost ${SERIALBOX_BOOST_VERSION} REQUIRED ${REQUIRED_BOOST_COMPONENTS})
+
 #----------------- build bundled libs
 add_subdirectory( libs )
 include_directories(${GTEST_INCLUDE_DIRS})
@@ -73,7 +79,6 @@ add_dependencies( gridtools_verification googletest )
 target_link_libraries( gridtools_verification ${Boost_LIBRARIES} )
 target_link_libraries( gridtools_verification ${SERIALBOX_CXX_LIBRARIES} ${GTEST_BOTH_LIBRARIES} )
 target_link_libraries( gridtools_verification pthread )
-target_compile_definitions( gridtools_verification PRIVATE "-DBOOST_SYSTEM_NO_DEPRECATED" )
 
 #----------------- install verification framework
 install( TARGETS gridtools_verification DESTINATION "lib" EXPORT gridtools_verification )

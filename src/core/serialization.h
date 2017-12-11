@@ -97,8 +97,6 @@ namespace gt_verification {
                                       field_sizes[1] % field_sizes[2]
                                << logger_action::endl;
 
-            std::cout << "dim: " << info.dims().size() << " / " << field_sizes.size() << std::endl;
-
             // Check dimensions
             if (!sizes_compatible(info.dims(), field_sizes))
                 throw verification_exception("the requested field '%s' has a different size than the provided field.\n"
