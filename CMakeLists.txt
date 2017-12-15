@@ -10,7 +10,7 @@ project(gridtools-verification CXX C)
 include(ExternalProject)
 
 set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.3")
-set(SERIALBOX_VERSION_REQUIRED "2.2.0")
+set(SERIALBOX_VERSION_REQUIRED "2.2.1")
 
 #----------------- CMake options
 # C++11 compiler support
