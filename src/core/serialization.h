@@ -43,6 +43,8 @@
 #include "../verification_exception.h"
 #include "error.h"
 #include "logger.h"
+#include <numeric>
+#include <string>
 
 namespace gt_verification {
 
@@ -86,26 +88,23 @@ namespace gt_verification {
             // Get info of serialized field
             const ser::field_meta_info &info = serializer_->get_field_meta_info(name);
 
-            int iSizeHalo = field.i_size();
-            int jSizeHalo = field.j_size();
-            int kSize = field.k_size();
+            std::vector< int > field_sizes{field.i_size(), field.j_size(), field.k_size()};
 
-            VERIFICATION_LOG() << boost::format(" - loading %-15s (%2i, %2i, %2i)") % name % iSizeHalo % jSizeHalo %
-                                      kSize
+            auto mask = mask_for_killed_dimensions(info.dims(), field_sizes);
+            field_sizes = apply_mask(mask, field_sizes);
+
+            VERIFICATION_LOG() << boost::format(" - loading %-15s (%2i, %2i, %2i)") % name % field_sizes[0] %
+                                      field_sizes[1] % field_sizes[2]
                                << logger_action::endl;
 
             // Check dimensions
-            if ((info.dims()[0] != iSizeHalo) || (info.dims()[1] != jSizeHalo) || (info.dims()[2] != kSize))
+            if (!sizes_compatible(info.dims(), field_sizes))
                 throw verification_exception("the requested field '%s' has a different size than the provided field.\n"
-                                             "Registered as: (%i, %i, %i)\n"
-                                             "Given     as: (%i, %i, %i)",
+                                             "Registered as: (%s)\n"
+                                             "Given      as: (%s)",
                     name,
-                    info.dims()[0],
-                    info.dims()[1],
-                    info.dims()[2],
-                    iSizeHalo,
-                    jSizeHalo,
-                    kSize);
+                    to_string(info.dims()),
+                    to_string(field_sizes));
 
             // Check types
             if (info.type() != serialbox::ToTypeID< T >::value)
@@ -113,11 +112,8 @@ namespace gt_verification {
                     "the requested field '%s' has a different type than the provided field.", name);
 
             // Deserialize field
-            int iStride = field.i_stride();
-            int jStride = field.j_stride();
-            int kStride = field.k_stride();
-
-            std::vector< int > strides{iStride, jStride, kStride};
+            std::vector< int > strides{field.i_stride(), field.j_stride(), field.k_stride()};
+            strides = apply_mask(mask, strides);
             serializer_->read(name, savepoint, field.data(), strides);
 
             field.sync();
@@ -189,5 +185,62 @@ namespace gt_verification {
 
       private:
         std::shared_ptr< ser::serializer > serializer_;
+
+        bool can_transform_dimension(int serialized_size, int verifier_size) {
+            // We allow automatic transformation of D-1-dim fields to D-dim fields if the length of the dimension is 1
+            if (serialized_size == 0 && verifier_size == 1)
+                return true;
+            else
+                return false;
+        }
+
+        bool sizes_compatible(const std::vector< int > &serialized_sizes, const std::vector< int > &verifier_sizes) {
+            for (size_t i = 0; i < serialized_sizes.size(); ++i) {
+                if (serialized_sizes[i] == 0)
+                    return true;
+                else if (serialized_sizes[i] != verifier_sizes[i] &&
+                         !can_transform_dimension(serialized_sizes[i], verifier_sizes[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        std::string to_string(const std::vector< int > &v) {
+            if (v.size() == 0)
+                return std::string("<empty-vector>");
+            else
+                return std::accumulate(std::next(v.begin()),
+                    v.end(),
+                    std::string(std::to_string(v[0])),
+                    [](std::string s, int i) { return s + ", " + std::to_string(i); });
+        }
+
+        // FIXME: hack the mapping of killed dimension
+        std::vector< bool > mask_for_killed_dimensions(
+            const std::vector< int > &serialized_sizes, const std::vector< int > &verifier_sizes) const {
+            std::vector< bool > mask;
+            size_t i_serialized = 0;
+            for (size_t i = 0; i < verifier_sizes.size(); ++i) {
+                if (verifier_sizes[i] == serialized_sizes[i_serialized]) {
+                    mask.push_back(true);
+                    i_serialized++;
+                } else if (verifier_sizes[i] == 1)
+                    mask.push_back(false);
+                else
+                    throw verification_exception("Failed to mask killed dimensions.");
+            }
+            return mask;
+        }
+
+        std::vector< int > apply_mask(const std::vector< bool > &mask, const std::vector< int > &v) const {
+            if (mask.size() != v.size())
+                throw verification_exception("Size of mask does not match size of vector.");
+            std::vector< int > result;
+            for (size_t i = 0; i < mask.size(); ++i) {
+                if (mask[i])
+                    result.push_back(v[i]);
+            }
+            return result;
+        }
     };
 }

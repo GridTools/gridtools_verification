@@ -9,8 +9,8 @@ project(gridtools-verification CXX C)
 
 include(ExternalProject)
 
-set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.2")
-set(SERIALBOX_VERSION_REQUIRED "2.1.0")
+set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.3")
+set(SERIALBOX_VERSION_REQUIRED "2.2.1")
 
 #----------------- CMake options
 # C++11 compiler support
@@ -44,6 +44,12 @@ find_package( Serialbox "${SERIALBOX_VERSION_REQUIRED}" REQUIRED HINTS
     "${SERIALBOX_DIR}/cmake"
     "$ENV{SERIALBOX_ROOT}/cmake")
 include_directories(${SERIALBOX_INCLUDE_DIRS})
+
+#----------------- find boost
+set( Boost_NO_SYSTEM_PATHS ON )
+set( BOOST_INCLUDEDIR "${SERIALBOX_BOOST_INCLUDE_DIRS}" ) 
+set( REQUIRED_BOOST_COMPONENTS ${SERIALBOX_REQUIRED_BOOST_COMPONENTS} program_options system)
+find_package( Boost ${SERIALBOX_BOOST_VERSION} REQUIRED ${REQUIRED_BOOST_COMPONENTS})
 
 #----------------- build bundled libs
 add_subdirectory( libs )
