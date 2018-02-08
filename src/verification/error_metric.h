@@ -37,6 +37,7 @@
 
 #include <cmath>
 #include "../common.h"
+#include "error_metric_interface.h"
 
 namespace gt_verification {
 
@@ -54,7 +55,7 @@ namespace gt_verification {
      * @ingroup DycoreUnittestVerificationLibrary
      */
     template < typename T >
-    class error_metric {
+    class error_metric : public error_metric_interface< T > {
       public:
         error_metric(const error_metric &) = default;
         error_metric &operator=(const error_metric &) = default;
@@ -72,7 +73,7 @@ namespace gt_verification {
          *
          * @return true iff absolute(a - b) <= (atol + rtol * absolute(b))
          */
-        inline bool equal(T a, T b) const noexcept { return (std::fabs(a - b) <= (atol_ + rtol_ * std::fabs(b))); }
+        bool equal(T a, T b) const noexcept override { return (std::fabs(a - b) <= (atol_ + rtol_ * std::fabs(b))); }
 
       private:
         T rtol_;

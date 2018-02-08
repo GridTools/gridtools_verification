@@ -44,7 +44,7 @@
 #include "../core/logger.h"
 #include "../verification_exception.h"
 #include "verification_reporter.h"
-#include "error_metric.h"
+#include "error_metric_interface.h"
 #include "boundary_extent.h"
 #include "verification.h"
 #include "verification_result.h"
@@ -206,7 +206,7 @@ namespace gt_verification {
          *
          * @return VerificationResult
          */
-        verification_result verify(error_metric< T > errorMetric) {
+        verification_result verify(const error_metric_interface< T > &error_metric) {
             verifications_.clear();
 
             verification_result totalResult(true, "\n");
@@ -214,10 +214,10 @@ namespace gt_verification {
             // Iterate over output fields and compare them to the reference fields
             for (std::size_t i = 0; i < outputFields_.size(); ++i) {
                 verifications_.emplace_back(
-                    outputFields_[i].second, referenceFields_[i].second.to_view(), errorMetric, boundaries_[i]);
+                    outputFields_[i].second, referenceFields_[i].second.to_view(), boundaries_[i]);
 
                 // Perform actual verification and merge results
-                totalResult.merge(verifications_.back().verify());
+                totalResult.merge(verifications_.back().verify(error_metric));
             }
             return totalResult;
         }
