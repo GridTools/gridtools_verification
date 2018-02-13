@@ -48,7 +48,6 @@ namespace gt_verification {
      */
     class verification_result {
       public:
-        verification_result() : passed_(true), msg_("") {}
         verification_result(const verification_result &) = default;
         verification_result(verification_result &&) = default;
         verification_result &operator=(const verification_result &) = default;
@@ -75,6 +74,11 @@ namespace gt_verification {
             passed_ &= result.passed();
             if (!result.msg().empty())
                 msg_ += "    " + result.msg() + "\n";
+        }
+
+        void clear() noexcept {
+            passed_ = true;
+            msg_ = "\n";
         }
 
         /**

@@ -97,8 +97,12 @@ namespace gt_verification {
     template < typename T >
     class field_collection {
       public:
-        field_collection(verification_specification verificationSpecification)
-            : verificationSpecification_(verificationSpecification){};
+        field_collection(verification_specification verificationSpecification) : reporter_(verificationSpecification){};
+
+        field_collection(const field_collection &) = delete;
+        field_collection &operator=(const field_collection &) = delete;
+        field_collection(field_collection &&) = default;
+        field_collection &operator=(field_collection &&) = default;
 
         struct collection_iterator {
             size_t pos_;
@@ -108,7 +112,7 @@ namespace gt_verification {
 
             collection_iterator(size_t pos, field_collection< T > &collection) : pos_(pos), collection_(collection) {}
 
-            field_collection< T > operator*() {
+            field_collection< T > &operator*() {
                 collection_.active_iteration_ = pos_; // TODO
                 return collection_;
             };
@@ -225,25 +229,22 @@ namespace gt_verification {
          * This is a new interface where you don't register the output field but call the verify with the field.
          */
         template < typename FieldType >
-        verification_result verify_output( // TODO think about a proper name
-            const std::string &fieldname,
+        verification_result add_output(const std::string &fieldname,
             FieldType &field,
             const error_metric_interface< T > &error_metric,
             boundary_extent boundary = boundary_extent()) noexcept {
-            verification_result totalResult(true, "\n");
-
-            auto outputFieldPair = std::make_pair(fieldname, type_erased_field_view< T >(field));
-            auto refFieldPair = std::make_pair(fieldname, type_erased_field< T >(field));
 
             auto refSavepoint = iterations_[active_iteration_].output;
 
+            type_erased_field< T > reference_field(field);
+
             serialization serialization(referenceSerializer_);
-            serialization.load(refFieldPair.first, refFieldPair.second.to_view(), refSavepoint);
+            serialization.load(fieldname, reference_field.to_view(), refSavepoint);
 
-            verification< T > ver(outputFieldPair.second, refFieldPair.second.to_view(), boundary);
-            totalResult.merge(ver.verify(error_metric));
+            verifications_.emplace_back(type_erased_field_view< T >(field), reference_field.to_view(), boundary);
+            result_.merge(verifications_.back().verify(error_metric));
 
-            return totalResult;
+            return result_;
         }
 
         /**
@@ -309,10 +310,9 @@ namespace gt_verification {
          * @brief Report failures depending on values set in VerificationReporter
          */
         void report_failures() const noexcept {
-            verification_reporter verificationReporter(verificationSpecification_);
             for (const auto &verification : verifications_)
                 if (!verification) {
-                    verificationReporter.report(verification);
+                    reporter_.report(verification);
                 }
         }
 
@@ -334,6 +334,19 @@ namespace gt_verification {
         collection_iterator begin() { return collection_iterator(0, *this); }
         collection_iterator end() { return collection_iterator(iterations_.size(), *this); }
 
+        /**
+         * @brief reports errors and resets the error state
+         */
+        verification_result verify_collection() {
+            if (!result_.passed())
+                report_failures();
+
+            verification_result tmp = result_;
+            verifications_.clear();
+            result_.clear();
+            return tmp;
+        }
+
         int active_iteration_;
 
       private:
@@ -348,7 +361,8 @@ namespace gt_verification {
         std::vector< std::pair< std::string, type_erased_field< T > > > referenceFields_;
         std::vector< boundary_extent > boundaries_;
 
-        verification_specification verificationSpecification_;
+        verification_reporter reporter_;
         std::vector< verification< T > > verifications_;
+        verification_result result_;
     };
 }
