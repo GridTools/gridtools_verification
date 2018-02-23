@@ -39,7 +39,6 @@
 #include "../core/error.h"
 #include "../core/utility.h"
 #include "../core/logger.h"
-#include "error_metric.h"
 #include "verification_specification.h"
 #include <cstdlib>
 #include <string>
