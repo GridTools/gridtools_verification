@@ -1,6 +1,7 @@
 #pragma once
 
 #include "field_collection.h"
+#include "error_metric.h"
 #include "../core.h"
 #include <gtest/gtest.h>
 #include <string>
@@ -16,14 +17,16 @@ namespace gt_verification {
                                  private boost::noncopyable /* singleton */
     {
       public:
-        unittest_environment(command_line &cl, std::string data_name, std::string archive_type="Binary") : cl_(cl), data_path_("./") {
+        unittest_environment(command_line &cl, std::string data_name, std::string archive_type = "Binary")
+            : cl_(cl), data_path_("./") {
             if (cl_.has("path"))
                 data_path_ = cl_.as< std::string >("path");
 
             VERIFICATION_LOG() << "Using serializer data-path: '" << data_path_ << "'" << logger_action::endl;
 
             // Initialize the serializer
-            reference_serializer_ = std::make_shared< ser::serializer >(ser::open_mode::Read, data_path_, data_name, archive_type);
+            reference_serializer_ =
+                std::make_shared< ser::serializer >(ser::open_mode::Read, data_path_, data_name, archive_type);
 
             // Initialize error serializer
             error_serializer_ = std::make_shared< ser::serializer >(ser::open_mode::Write, ".", "Error");
@@ -125,7 +128,7 @@ namespace gt_verification {
          */
         template < typename T >
         testing::AssertionResult verify_collection(
-            field_collection< T > &fieldCollection, error_metric< T > errorMetric) {
+            field_collection< T > &fieldCollection, const error_metric_interface< T > &errorMetric) {
             verification_result result = fieldCollection.verify(errorMetric);
             if (!result.passed())
                 fieldCollection.report_failures();

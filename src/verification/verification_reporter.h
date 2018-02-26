@@ -50,7 +50,6 @@
 #include "../core/command_line.h"
 #include "../core/error.h"
 #include "../core/utility.h"
-#include "error_metric.h"
 
 namespace gt_verification {
 

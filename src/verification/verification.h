@@ -86,10 +86,8 @@ namespace gt_verification {
          */
         verification(type_erased_field_view< T > outputField,
             type_erased_field_view< T > referenceField,
-            error_metric< T > errorMetric,
             boundary_extent boundary = boundary_extent())
-            : outputField_(outputField), referenceField_(referenceField), errorMetric_(errorMetric),
-              boundary_(boundary) {}
+            : outputField_(outputField), referenceField_(referenceField), boundary_(boundary) {}
 
         /**
          * @brief Verify that outputField is equal to refrenceField within the given error metric
@@ -98,7 +96,7 @@ namespace gt_verification {
          *
          * @return VerificationResult
          */
-        verification_result verify() noexcept {
+        verification_result verify(const error_metric_interface< T > &error_metric) noexcept {
             // Sync fields with Host
             outputField_.sync();
             referenceField_.sync();
@@ -130,7 +128,7 @@ namespace gt_verification {
             for (int k = boundary_.k_minus(); k < (kSizeOut + boundary_.k_plus()); ++k)
                 for (int j = boundary_.j_minus(); j < (jSizeOut + boundary_.j_plus()); ++j)
                     for (int i = boundary_.i_minus(); i < (iSizeOut + boundary_.i_plus()); ++i)
-                        if (!errorMetric_.equal(outputField_(i, j, k), referenceField_(i, j, k)))
+                        if (!error_metric.equal(outputField_(i, j, k), referenceField_(i, j, k)))
                             failures_.push_back(failure{i, j, k, outputField_(i, j, k), referenceField_(i, j, k)});
 
             if (failures_.empty())
@@ -184,7 +182,6 @@ namespace gt_verification {
       private:
         type_erased_field_view< T > outputField_;
         type_erased_field_view< T > referenceField_;
-        error_metric< T > errorMetric_;
         boundary_extent boundary_;
 
         std::vector< failure > failures_;
