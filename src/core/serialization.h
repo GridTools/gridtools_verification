@@ -221,13 +221,12 @@ namespace gt_verification {
             std::vector< bool > mask;
             size_t i_serialized = 0;
             for (size_t i = 0; i < verifier_sizes.size(); ++i) {
-                if (verifier_sizes[i] == serialized_sizes[i_serialized]) {
+                if (verifier_sizes[i] != serialized_sizes[i_serialized] && verifier_sizes[i] == 1) {
+                    mask.push_back(false);
+                } else {
                     mask.push_back(true);
                     i_serialized++;
-                } else if (verifier_sizes[i] == 1)
-                    mask.push_back(false);
-                else
-                    throw verification_exception("Failed to mask killed dimensions.");
+                }
             }
             return mask;
         }
