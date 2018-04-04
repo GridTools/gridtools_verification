@@ -136,7 +136,7 @@ namespace gt_verification {
             static_assert(
                 std::is_same< typename FieldType::storage_t::data_t, T >::value, "internal error: types do not match");
 
-            type_erased_field_view_base(FieldType &field) : field_(field) {}
+            type_erased_field_view_base(FieldType field) : field_(field) {}
 
             virtual const T &access(int i, int j, int k) const noexcept override {
                 return make_host_view(field_)(i, j, k);
@@ -189,7 +189,7 @@ namespace gt_verification {
             virtual void sync() noexcept override { field_.sync(); }
 
           private:
-            FieldType &field_;
+            FieldType field_;
         };
 
         template < typename FieldType, typename T >
@@ -320,7 +320,7 @@ namespace gt_verification {
          * @brief Create a TypeErasedFieldView from GridTools field (stores a reference to the field)
          */
         template < class FieldType >
-        type_erased_field_view(const FieldType &field) {
+        type_erased_field_view(FieldType field) {
             static_assert(
                 !internal::is_type_erased_field_view< FieldType >::value, "FieldType is not a GridTools field");
 
@@ -328,7 +328,7 @@ namespace gt_verification {
             // the copy constructor. Hence, we need to capture the field by const ref.. maybe this can
             // be improved.
             base_ = std::make_shared< internal::type_erased_field_view_base< FieldType, T > >(
-                const_cast< FieldType & >(field));
+                field);
         }
 
         /**
