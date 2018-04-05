@@ -58,7 +58,7 @@ namespace gt_verification {
      *
      * @ingroup DycoreUnittestVerificationLibrary
      */
-    class verification_reporter : private boost::noncopyable {
+    class verification_reporter {
       protected:
         template < typename T >
         void list_failures(const verification< T > &verif) const noexcept {
@@ -176,7 +176,7 @@ namespace gt_verification {
         }
 
       public:
-        verification_reporter(const verification_specification verifSpec) : verifSpec_(verifSpec){};
+        verification_reporter(const verification_specification &verifSpec) : verifSpec_(verifSpec){};
 
         /**
          * @brief Report failures to console

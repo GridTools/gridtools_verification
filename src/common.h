@@ -36,3 +36,19 @@
 #pragma once
 
 #include <boost/core/noncopyable.hpp>
+
+#if __cplusplus >= 201402L // since c++14
+#define GV_DEPRECATED(func) [[deprecated]] func
+#define GV_DEPRECATED_REASON(func, msg) [[deprecated(#msg)]] func
+#else
+#ifdef __GNUC__
+#define GV_DEPRECATED(func) __attribute__((deprecated)) func
+#define GV_DEPRECATED_REASON(func, msg) GV_DEPRECATED(func)
+#elif defined(_MSC_VER)
+#define GV_DEPRECATED(func) __declspec(deprecated) func
+#define GV_DEPRECATED_REASON(func, msg) GV_DEPRECATED(func)
+#else
+#define GV_DEPRECATED(func) func
+#define GV_DEPRECATED_REASON(func, msg) GV_DEPRECATED(func)
+#endif
+#endif

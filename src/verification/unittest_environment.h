@@ -99,7 +99,7 @@ namespace gt_verification {
                 skipped_.push_back(spname);
             }
 
-            return collection;
+            return std::move(collection);
         }
 
         void skip_test(std::string spname = "");
@@ -127,8 +127,9 @@ namespace gt_verification {
          * otherwise
          */
         template < typename T >
-        testing::AssertionResult verify_collection(
-            field_collection< T > &fieldCollection, const error_metric_interface< T > &errorMetric) {
+        GV_DEPRECATED_REASON(testing::AssertionResult verify_collection(field_collection< T > &fieldCollection,
+                                 const error_metric_interface< T > &errorMetric),
+            "Consider calling verify_collection on the collection instead.") {
             verification_result result = fieldCollection.verify(errorMetric);
             if (!result.passed())
                 fieldCollection.report_failures();

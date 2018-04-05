@@ -76,6 +76,19 @@ namespace gt_verification {
         };
     }
 
+    // TODO a clean solution for the iterator would iterate over something like this.
+    //    class verification_savepoint {
+    //      public:
+    //        void load_input(...)
+    //        {
+    //        }
+    //        verification_result verify(..)
+    //        {
+    //        }
+    //      private:
+    //        ...
+    //    };
+
     /**
      * @brief A collection of serialized fields
      *
@@ -84,8 +97,40 @@ namespace gt_verification {
     template < typename T >
     class field_collection {
       public:
-        field_collection(verification_specification verificationSpecification)
-            : verificationSpecification_(verificationSpecification){};
+        field_collection(verification_specification verificationSpecification) : reporter_(verificationSpecification){};
+
+        field_collection(const field_collection &) = delete;
+        field_collection &operator=(const field_collection &) = delete;
+        field_collection(field_collection &&) = default;
+        field_collection &operator=(field_collection &&) = default;
+
+        struct collection_iterator {
+            size_t pos_;
+            // TODO this is a bit hacky, but I think good enough for now,
+            // the clean solution would be to iterate over a list of s
+            field_collection< T > &collection_;
+
+            collection_iterator(size_t pos, field_collection< T > &collection) : pos_(pos), collection_(collection) {}
+
+            field_collection< T > &operator*() {
+                collection_.active_iteration_ = pos_; // TODO
+                return collection_;
+            };
+
+            collection_iterator &operator++() {
+                pos_++;
+                return *this;
+            }
+
+            collection_iterator operator++(int) {
+                collection_iterator tmp(*this);
+                operator++();
+                return tmp;
+            }
+
+            bool operator==(const collection_iterator &other) const { return pos_ == other.pos_; }
+            bool operator!=(const collection_iterator &other) const { return !operator==(other); }
+        };
 
         /**
          * @brief Attach a reference serializer to the collection.
@@ -141,9 +186,19 @@ namespace gt_verification {
          * @param field     The field that has to be filled with data from disk
          */
         template < typename FieldType >
-        void register_input_field(const std::string &fieldname, FieldType &field, bool also_previous = false) noexcept {
+        GV_DEPRECATED_REASON(void register_input_field(
+                                 const std::string &fieldname, FieldType &field, bool also_previous = false) noexcept,
+            "Use the c++11 iterator with iterator.load_input(...).") {
             inputFields_.push_back(
                 internal::input_field< T >{fieldname, type_erased_field_view< T >(field), also_previous});
+        }
+
+        template < typename FieldType >
+        void load_input(const std::string &fieldname, FieldType &field) {
+            serialization serialization(referenceSerializer_);
+            auto inputSavepoint = iterations_[active_iteration_].input;
+            type_erased_field_view< T > f(field);
+            serialization.load(fieldname, f, inputSavepoint);
         }
 
         /**
@@ -157,8 +212,10 @@ namespace gt_verification {
          * @param metric    The metric which is used to check the field
          */
         template < typename FieldType >
-        void register_output_and_reference_field(
-            const std::string &fieldname, FieldType &field, boundary_extent boundary = boundary_extent()) noexcept {
+        GV_DEPRECATED_REASON(
+            void register_output_and_reference_field(
+                const std::string &fieldname, FieldType &field, boundary_extent boundary = boundary_extent()) noexcept,
+            "Use the c++11 iterator with iterator.verify_output(...).") {
             boundaries_.push_back(boundary);
             outputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
 
@@ -167,16 +224,43 @@ namespace gt_verification {
         }
 
         /**
+         * @brief verify an output field
+         *
+         * This is a new interface where you don't register the output field but call the verify with the field.
+         */
+        template < typename FieldType >
+        verification_result add_output(const std::string &fieldname,
+            FieldType &field,
+            const error_metric_interface< T > &error_metric,
+            boundary_extent boundary = boundary_extent()) noexcept {
+
+            auto refSavepoint = iterations_[active_iteration_].output;
+
+            type_erased_field< T > reference_field(field);
+
+            serialization serialization(referenceSerializer_);
+            serialization.load(fieldname, reference_field.to_view(), refSavepoint);
+
+            verifications_.emplace_back(type_erased_field_view< T >(field), reference_field.to_view(), boundary);
+            result_.merge(verifications_.back().verify(error_metric));
+
+            return result_;
+        }
+
+        /**
          * @brief Loads input values and reference values from disk into the input- and reference fields
          *
          * After this the computations and verification can take place.
          */
-        void load_iteration(int iteration) {
+        GV_DEPRECATED_REASON(void load_iteration(int iteration),
+            "Use the c++11 iterator with iterator.load_input(...) and iterator.verify_output(...).") {
             if (iteration >= (int)iterations_.size())
                 error::fatal(boost::format("invalid access of iteration '%i' (there are only %i iterations)") %
                              iteration % iterations_.size());
 
             serialization serialization(referenceSerializer_);
+
+            active_iteration_ = iteration;
 
             auto inputSavepoint = iterations_[iteration].input;
             auto refSavepoint = iterations_[iteration].output;
@@ -226,10 +310,9 @@ namespace gt_verification {
          * @brief Report failures depending on values set in VerificationReporter
          */
         void report_failures() const noexcept {
-            verification_reporter verificationReporter(verificationSpecification_);
             for (const auto &verification : verifications_)
                 if (!verification) {
-                    verificationReporter.report(verification);
+                    reporter_.report(verification);
                 }
         }
 
@@ -248,6 +331,24 @@ namespace gt_verification {
          */
         const std::vector< internal::savepoint_pair > &iterations() const noexcept { return iterations_; }
 
+        collection_iterator begin() { return collection_iterator(0, *this); }
+        collection_iterator end() { return collection_iterator(iterations_.size(), *this); }
+
+        /**
+         * @brief reports errors and resets the error state
+         */
+        verification_result verify_collection() {
+            if (!result_.passed())
+                report_failures();
+
+            verification_result tmp = result_;
+            verifications_.clear();
+            result_.clear();
+            return tmp;
+        }
+
+        int active_iteration_;
+
       private:
         std::string name_;
         std::shared_ptr< ser::serializer > referenceSerializer_;
@@ -260,7 +361,8 @@ namespace gt_verification {
         std::vector< std::pair< std::string, type_erased_field< T > > > referenceFields_;
         std::vector< boundary_extent > boundaries_;
 
-        verification_specification verificationSpecification_;
+        verification_reporter reporter_;
         std::vector< verification< T > > verifications_;
+        verification_result result_;
     };
 }
