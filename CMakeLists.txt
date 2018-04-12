@@ -9,7 +9,7 @@ project(gridtools-verification CXX C)
 
 include(ExternalProject)
 
-set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.6")
+set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.7")
 set(SERIALBOX_VERSION_REQUIRED "2.2.1")
 
 #----------------- CMake options
@@ -70,7 +70,7 @@ file(GLOB_RECURSE GT_VERIFICATION_SOURCES "src/*.cpp")
 
 if( GRIDTOOLS_ROOT )
   message( STATUS "GridTools is available: ${GRIDTOOLS_ROOT}/include" )
-  include_directories( ${GRIDTOOLS_ROOT}/include )
+  include_directories( ${GRIDTOOLS_ROOT}/include/gridtools ) # TODO: should point to ${GRIDTOOLS_ROOT}/include 
   add_definitions(-DHAS_GRIDTOOLS)
 endif()
 
