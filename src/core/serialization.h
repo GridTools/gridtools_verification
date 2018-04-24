@@ -35,15 +35,15 @@
 */
 #pragma once
 
-#include <storage/storage-facility.hpp>
-#include <serialbox/core/frontend/gridtools/Serializer.h>
 #include "../common.h"
-#include "command_line.h"
-#include "type_erased_field.h"
 #include "../verification_exception.h"
+#include "command_line.h"
 #include "error.h"
 #include "logger.h"
+#include "type_erased_field.h"
 #include <numeric>
+#include <serialbox/core/frontend/gridtools/Serializer.h>
+#include <storage/storage-facility.hpp>
 #include <string>
 
 namespace gt_verification {
@@ -77,12 +77,19 @@ namespace gt_verification {
          * @{
          */
         template < class FieldType >
-        void load(const std::string &name, FieldType &field, const ser::savepoint &savepoint) {
-            this->load(name, type_erased_field_view< typename FieldType::storage_t::data_t >(field), savepoint);
+        void load(const std::string &name,
+            FieldType &field,
+            const ser::savepoint &savepoint,
+            const bool also_previous = false) {
+            this->load(
+                name, type_erased_field_view< typename FieldType::storage_t::data_t >(field), savepoint, also_previous);
         }
 
         template < typename T >
-        void load(const std::string &name, type_erased_field_view< T > field, const ser::savepoint &savepoint) {
+        void load(const std::string &name,
+            type_erased_field_view< T > field,
+            const ser::savepoint &savepoint,
+            const bool also_previous = false) {
             field.sync();
 
             // Get info of serialized field
@@ -114,7 +121,7 @@ namespace gt_verification {
             // Deserialize field
             std::vector< int > strides{field.i_stride(), field.j_stride(), field.k_stride()};
             strides = apply_mask(mask, strides);
-            serializer_->read(name, savepoint, field.data(), strides);
+            serializer_->read(name, savepoint, field.data(), strides, also_previous);
 
             field.sync();
         }
@@ -209,10 +216,10 @@ namespace gt_verification {
             if (v.size() == 0)
                 return std::string("<empty-vector>");
             else
-                return std::accumulate(std::next(v.begin()),
-                    v.end(),
-                    std::string(std::to_string(v[0])),
-                    [](std::string s, int i) { return s + ", " + std::to_string(i); });
+                return std::accumulate(
+                    std::next(v.begin()), v.end(), std::string(std::to_string(v[0])), [](std::string s, int i) {
+                        return s + ", " + std::to_string(i);
+                    });
         }
 
         // FIXME: hack the mapping of killed dimension
