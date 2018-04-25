@@ -35,19 +35,19 @@
 */
 #pragma once
 
-#include "verification_specification.h"
-#include <vector>
 #include "../common.h"
-#include "../core/type_erased_field.h"
-#include "../core/serialization.h"
 #include "../core/error.h"
 #include "../core/logger.h"
+#include "../core/serialization.h"
+#include "../core/type_erased_field.h"
 #include "../verification_exception.h"
-#include "verification_reporter.h"
-#include "error_metric_interface.h"
 #include "boundary_extent.h"
+#include "error_metric_interface.h"
 #include "verification.h"
+#include "verification_reporter.h"
 #include "verification_result.h"
+#include "verification_specification.h"
+#include <vector>
 
 namespace gt_verification {
 
@@ -66,13 +66,15 @@ namespace gt_verification {
         class input_field {
           public:
             input_field(std::string name, gt_verification::type_erased_field_view< T > field_view, bool also_previous)
-                : name_(name), field_view_(field_view) {}
+                : name_(name), field_view_(field_view), also_previous_(also_previous) {}
             std::string name() const noexcept { return name_; }
             gt_verification::type_erased_field_view< T > field_view() const noexcept { return field_view_; }
+            bool also_previous() const noexcept { return also_previous_; }
 
           private:
             const std::string name_;
             const gt_verification::type_erased_field_view< T > field_view_;
+            const bool also_previous_;
         };
     }
 
@@ -186,7 +188,10 @@ namespace gt_verification {
                 VERIFICATION_LOG() << "Loading input savepoint '" << inputSavepoint << "'" << logger_action::endl;
 
                 for (auto &inputFieldPair : inputFields_)
-                    serialization.load(inputFieldPair.name(), inputFieldPair.field_view(), inputSavepoint);
+                    serialization.load(inputFieldPair.name(),
+                        inputFieldPair.field_view(),
+                        inputSavepoint,
+                        inputFieldPair.also_previous());
 
                 // Load reference fields
                 VERIFICATION_LOG() << "Loading reference savepoint '" << refSavepoint << "'" << logger_action::endl;
