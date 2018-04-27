@@ -144,6 +144,7 @@ namespace gt_verification {
          */
         template < typename FieldType >
         void register_input_field(const std::string &fieldname, FieldType field, bool also_previous = false) noexcept {
+        	field.sync();
             inputFields_.push_back(
                 internal::input_field< T >{fieldname, type_erased_field_view< T >(field), also_previous});
         }
@@ -161,6 +162,7 @@ namespace gt_verification {
         template < typename FieldType >
         void register_output_and_reference_field(
             const std::string &fieldname, FieldType field, boundary_extent boundary = boundary_extent()) noexcept {
+        	field.sync();
             boundaries_.push_back(boundary);
             outputFields_.push_back(std::make_pair(fieldname, type_erased_field_view< T >(field)));
 
