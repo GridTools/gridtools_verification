@@ -118,7 +118,7 @@ namespace gt_verification {
             // Check dimensions
             if ((iSizeOut != iSizeRef) || (jSizeOut != jSizeRef) || (kSizeOut != kSizeRef))
                 return verification_result(false,
-                    (boost::format("the output field '%s' has a diffrent size than the refrence "
+                    (boost::format("the output field '%s' has a different size than the reference "
                                    "field '%s'.\n %-15s as: (%i, %i, %i)\n %-15s as: (%i, %i, %i)") %
                         nameOut % nameRef % nameOut % iSizeOut % jSizeOut % kSizeOut % nameRef % iSizeRef % jSizeRef %
                         kSizeRef)

@@ -9,7 +9,7 @@ project(gridtools-verification CXX C)
 
 include(ExternalProject)
 
-set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.8")
+set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.9")
 set(SERIALBOX_VERSION_REQUIRED "2.3.1")
 
 #----------------- CMake options

@@ -95,10 +95,8 @@ namespace gt_verification {
             // Get info of serialized field
             const ser::field_meta_info &info = serializer_->get_field_meta_info(name);
 
-            std::vector< int > field_sizes{field.i_size(), field.j_size(), field.k_size()};
-
-            auto mask = mask_for_killed_dimensions(info.dims(), field_sizes);
-            field_sizes = apply_mask(mask, field_sizes);
+            auto mask = mask_for_killed_dimensions({field.i_stride(), field.j_stride(), field.k_stride()});
+            auto field_sizes = apply_mask(mask, {field.i_size(), field.j_size(), field.k_size()});
 
             VERIFICATION_LOG() << boost::format(" - loading %-15s (%2i, %2i, %2i)") % name % field_sizes[0] %
                                       field_sizes[1] % field_sizes[2]
@@ -119,8 +117,7 @@ namespace gt_verification {
                     "the requested field '%s' has a different type than the provided field.", name);
 
             // Deserialize field
-            std::vector< int > strides{field.i_stride(), field.j_stride(), field.k_stride()};
-            strides = apply_mask(mask, strides);
+            auto strides = apply_mask(mask, {field.i_stride(), field.j_stride(), field.k_stride()});
             serializer_->read(name, savepoint, field.data(), strides, also_previous);
 
             field.sync();
@@ -216,23 +213,20 @@ namespace gt_verification {
             if (v.size() == 0)
                 return std::string("<empty-vector>");
             else
-                return std::accumulate(
-                    std::next(v.begin()), v.end(), std::string(std::to_string(v[0])), [](std::string s, int i) {
-                        return s + ", " + std::to_string(i);
-                    });
+                return std::accumulate(std::next(v.begin()),
+                    v.end(),
+                    std::string(std::to_string(v[0])),
+                    [](std::string s, int i) { return s + ", " + std::to_string(i); });
         }
 
         // FIXME: hack the mapping of killed dimension
-        std::vector< bool > mask_for_killed_dimensions(
-            const std::vector< int > &serialized_sizes, const std::vector< int > &verifier_sizes) const {
+        std::vector< bool > mask_for_killed_dimensions(const std::vector< int > &strides) const {
             std::vector< bool > mask;
-            size_t i_serialized = 0;
-            for (size_t i = 0; i < verifier_sizes.size(); ++i) {
-                if (verifier_sizes[i] != serialized_sizes[i_serialized] && verifier_sizes[i] == 1) {
+            for (size_t i = 0; i < strides.size(); ++i) {
+                if (strides[i] == 0) {
                     mask.push_back(false);
                 } else {
                     mask.push_back(true);
-                    i_serialized++;
                 }
             }
             return mask;
