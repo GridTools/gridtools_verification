@@ -98,8 +98,14 @@ namespace gt_verification {
             auto mask = mask_for_killed_dimensions({field.i_stride(), field.j_stride(), field.k_stride()});
             auto field_sizes = apply_mask(mask, {field.i_size(), field.j_size(), field.k_size()});
 
-            VERIFICATION_LOG() << boost::format(" - loading %-15s (%2i, %2i, %2i)") % name % field_sizes[0] %
-                                      field_sizes[1] % field_sizes[2]
+            // case where gridtools data_store is completely masked (-1,-1,-1) == 0D,
+            // but serializer is 1D with length 1: we fix the field_size and the mask
+            if (info.dims()[0] == 1 && field_sizes.size() == 0) {
+                field_sizes.push_back(1);
+                mask[0] = true;
+            }
+
+            VERIFICATION_LOG() << boost::format(" - loading %-15s (%s)") % name % to_string(field_sizes)
                                << logger_action::endl;
 
             // Check dimensions
@@ -200,7 +206,7 @@ namespace gt_verification {
 
         bool sizes_compatible(const std::vector< int > &serialized_sizes, const std::vector< int > &verifier_sizes) {
             for (size_t i = 0; i < serialized_sizes.size(); ++i) {
-                if (serialized_sizes[i] == 0)
+                if (serialized_sizes[i] == 0) // additional 0s at the end
                     return true;
                 else if (serialized_sizes[i] != verifier_sizes[i] &&
                          !can_transform_dimension(serialized_sizes[i], verifier_sizes[i]))
