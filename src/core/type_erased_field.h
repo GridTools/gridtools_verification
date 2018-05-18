@@ -85,29 +85,14 @@ namespace gt_verification {
             virtual int i_size() const noexcept = 0;
 
             /**
-             * First dimension (i-direction) including potential padding
-             */
-            virtual int i_size_padded() const noexcept = 0;
-
-            /**
              * Second dimension (j-direction) including halo-boundaries
              */
             virtual int j_size() const noexcept = 0;
 
             /**
-             * First dimension (i-direction) including potential padding
-             */
-            virtual int j_size_padded() const noexcept = 0;
-
-            /**
              * Third dimension (k-direction)
              */
             virtual int k_size() const noexcept = 0;
-
-            /**
-             * Third dimension (k-direction) including potential padding
-             */
-            virtual int k_size_padded() const noexcept = 0;
 
             /**
              * Stride in i-direction
@@ -138,55 +123,29 @@ namespace gt_verification {
 
             type_erased_field_view_base(FieldType field) : field_(field) {}
 
-            virtual const T &access(int i, int j, int k) const noexcept override {
-                return make_host_view(field_)(i, j, k);
-            }
+            const T &access(int i, int j, int k) const noexcept override { return make_host_view(field_)(i, j, k); }
 
-            virtual T &access(int i, int j, int k) noexcept override { return make_host_view(field_)(i, j, k); }
+            T &access(int i, int j, int k) noexcept override { return make_host_view(field_)(i, j, k); }
 
-            virtual T *data() noexcept override { return &make_host_view(field_)(0, 0, 0); }
+            T *data() noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-            virtual const T *data() const noexcept override { return &make_host_view(field_)(0, 0, 0); }
+            const T *data() const noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-            virtual const char *name() const noexcept override { return field_.name().c_str(); }
+            const char *name() const noexcept override { return field_.name().c_str(); }
 
-            virtual int i_size() const noexcept override {
-                return field_.get_storage_info_ptr()->template unaligned_dim< 0 >();
-            }
+            int i_size() const noexcept override { return field_.get_storage_info_ptr()->template total_length< 0 >(); }
 
-            virtual int i_size_padded() const noexcept override {
-                return field_.get_storage_info_ptr()->template dim< 0 >();
-            }
+            int j_size() const noexcept override { return field_.get_storage_info_ptr()->template total_length< 1 >(); }
 
-            virtual int j_size() const noexcept override {
-                return field_.get_storage_info_ptr()->template unaligned_dim< 1 >();
-            }
+            int k_size() const noexcept override { return field_.get_storage_info_ptr()->template total_length< 2 >(); }
 
-            virtual int j_size_padded() const noexcept override {
-                return field_.get_storage_info_ptr()->template dim< 1 >();
-            }
+            int i_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 0 >(); }
 
-            virtual int k_size() const noexcept override {
-                return field_.get_storage_info_ptr()->template unaligned_dim< 2 >();
-            }
+            int j_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 1 >(); }
 
-            virtual int k_size_padded() const noexcept override {
-                return field_.get_storage_info_ptr()->template dim< 2 >();
-            }
+            int k_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 2 >(); }
 
-            virtual int i_stride() const noexcept override {
-                return field_.get_storage_info_ptr()->template stride< 0 >();
-            }
-
-            virtual int j_stride() const noexcept override {
-                return field_.get_storage_info_ptr()->template stride< 1 >();
-            }
-
-            virtual int k_stride() const noexcept override {
-                return field_.get_storage_info_ptr()->template stride< 2 >();
-            }
-
-            virtual void sync() noexcept override { field_.sync(); }
+            void sync() noexcept override { field_.sync(); }
 
           private:
             FieldType field_;
@@ -199,9 +158,9 @@ namespace gt_verification {
                 std::is_same< typename FieldType::storage_t::data_t, T >::value, "internal error: types do not match");
 
             type_erased_field_base(const FieldType &field)
-                : metaData_(field.get_storage_info_ptr()->template unaligned_dim< 0 >(),
-                      field.get_storage_info_ptr()->template unaligned_dim< 1 >(),
-                      field.get_storage_info_ptr()->template unaligned_dim< 2 >()),
+                : metaData_(field.get_storage_info_ptr()->template total_length< 0 >(),
+                      field.get_storage_info_ptr()->template total_length< 1 >(),
+                      field.get_storage_info_ptr()->template total_length< 2 >()),
                   field_(metaData_, -1, field.name()) {
 
                 // Update field on host
@@ -219,55 +178,29 @@ namespace gt_verification {
                             dst(i, j, k) = src(i, j, k);
             }
 
-            virtual const T &access(int i, int j, int k) const noexcept override {
-                return make_host_view(field_)(i, j, k);
-            }
+            const T &access(int i, int j, int k) const noexcept override { return make_host_view(field_)(i, j, k); }
 
-            virtual T &access(int i, int j, int k) noexcept override { return make_host_view(field_)(i, j, k); }
+            T &access(int i, int j, int k) noexcept override { return make_host_view(field_)(i, j, k); }
 
-            virtual T *data() noexcept override { return &make_host_view(field_)(0, 0, 0); }
+            T *data() noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-            virtual const T *data() const noexcept override { return &make_host_view(field_)(0, 0, 0); }
+            const T *data() const noexcept override { return &make_host_view(field_)(0, 0, 0); }
 
-            virtual const char *name() const noexcept override { return field_.name().c_str(); }
+            const char *name() const noexcept override { return field_.name().c_str(); }
 
-            virtual int i_size() const noexcept override {
-                return field_.get_storage_info_ptr()->template unaligned_dim< 0 >();
-            }
+            int i_size() const noexcept override { return field_.get_storage_info_ptr()->template total_length< 0 >(); }
 
-            virtual int i_size_padded() const noexcept override {
-                return field_.get_storage_info_ptr()->template dim< 0 >();
-            }
+            int j_size() const noexcept override { return field_.get_storage_info_ptr()->template total_length< 1 >(); }
 
-            virtual int j_size() const noexcept override {
-                return field_.get_storage_info_ptr()->template unaligned_dim< 1 >();
-            }
+            int k_size() const noexcept override { return field_.get_storage_info_ptr()->template total_length< 2 >(); }
 
-            virtual int j_size_padded() const noexcept override {
-                return field_.get_storage_info_ptr()->template dim< 1 >();
-            }
+            int i_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 0 >(); }
 
-            virtual int k_size() const noexcept override {
-                return field_.get_storage_info_ptr()->template unaligned_dim< 2 >();
-            }
+            int j_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 1 >(); }
 
-            virtual int k_size_padded() const noexcept override {
-                return field_.get_storage_info_ptr()->template dim< 2 >();
-            }
+            int k_stride() const noexcept override { return field_.get_storage_info_ptr()->template stride< 2 >(); }
 
-            virtual int i_stride() const noexcept override {
-                return field_.get_storage_info_ptr()->template stride< 0 >();
-            }
-
-            virtual int j_stride() const noexcept override {
-                return field_.get_storage_info_ptr()->template stride< 1 >();
-            }
-
-            virtual int k_stride() const noexcept override {
-                return field_.get_storage_info_ptr()->template stride< 2 >();
-            }
-
-            virtual void sync() noexcept override { field_.sync(); }
+            void sync() noexcept override { field_.sync(); }
 
           private:
             typename FieldType::storage_info_t metaData_;
@@ -327,8 +260,7 @@ namespace gt_verification {
             // The const cast is ugly here but the signature of this constructor needs to be the same as
             // the copy constructor. Hence, we need to capture the field by const ref.. maybe this can
             // be improved.
-            base_ = std::make_shared< internal::type_erased_field_view_base< FieldType, T > >(
-                field);
+            base_ = std::make_shared< internal::type_erased_field_view_base< FieldType, T > >(field);
         }
 
         /**
@@ -363,19 +295,9 @@ namespace gt_verification {
         int i_size() const noexcept { return base_->i_size(); }
 
         /**
-         * @brief First dimension (i-direction) including potential padding
-         */
-        int i_size_padded() const noexcept { return base_->i_size_padded(); }
-
-        /**
          * @brief Second dimension (j-direction) including halo-boundaries
          */
         int j_size() const noexcept { return base_->j_size(); }
-
-        /**
-         * @brief First dimension (i-direction) including potential padding
-         */
-        int j_size_padded() const noexcept { return base_->j_size_padded(); }
 
         /**
          * @brief Third dimension (k-direction)
@@ -383,12 +305,7 @@ namespace gt_verification {
         int k_size() const noexcept { return base_->k_size(); }
 
         /**
-         * @brief Third dimension (k-direction) including potential padding
-         */
-        int k_size_padded() const noexcept { return base_->k_size_padded(); }
-
-        /**
-         * @brief Total size of field the field including potential padding
+         * @brief Total size of field the field
          */
         int size() const noexcept { return i_size() * j_size() * k_size(); }
 
@@ -487,19 +404,9 @@ namespace gt_verification {
         int i_size() const noexcept { return base_->i_size(); }
 
         /**
-         * @brief First dimension (i-direction) including potential padding
-         */
-        int i_size_padded() const noexcept { return base_->i_size_padded(); }
-
-        /**
          * @brief Second dimension (j-direction) including halo-boundaries
          */
         int j_size() const noexcept { return base_->j_size(); }
-
-        /**
-         * @brief First dimension (i-direction) including potential padding
-         */
-        int j_size_padded() const noexcept { return base_->j_size_padded(); }
 
         /**
          * @brief Third dimension (k-direction)
@@ -507,14 +414,9 @@ namespace gt_verification {
         int k_size() const noexcept { return base_->k_size(); }
 
         /**
-         * @brief Third dimension (k-direction) including potential padding
+         * @brief Total size of field the field
          */
-        int k_size_padded() const noexcept { return base_->k_size_padded(); }
-
-        /**
-         * @brief Total size of field the field including potential padding
-         */
-        int size() const noexcept { return i_size() * j_size_padded() * k_size(); }
+        int size() const noexcept { return i_size() * j_size() * k_size(); }
 
         /**
          * @brief Stride in i-direction
