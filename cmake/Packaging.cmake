@@ -15,7 +15,7 @@ install(FILES "${PROJECT_BINARY_DIR}/cmake/gridtools_verification-config.cmake" 
 # Generate and install GridtoolsVerificationConfigVersion.cmake
 write_basic_package_version_file(
   "${PROJECT_BINARY_DIR}/cmake/gridtools_verification-config-version.cmake"
-  VERSION ${GRIDTOOLS_VERIFICATION_VERSION_STRING}
+  VERSION ${gridtools-verification_VERSION_STRING}
   COMPATIBILITY AnyNewerVersion
 )
 install(FILES "${PROJECT_BINARY_DIR}/cmake/gridtools_verification-config-version.cmake" DESTINATION cmake)

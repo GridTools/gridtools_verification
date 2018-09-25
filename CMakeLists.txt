@@ -4,9 +4,10 @@ cmake_minimum_required(VERSION 3.9.0)
 # able to change.
 SET(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install/" CACHE PATH "installation prefix")
 
-project(gridtools-verification CXX C)
+project(gridtools-verification VERSION 0.10.0 LANGUAGES CXX C)
 
-set(GRIDTOOLS_VERIFICATION_VERSION_STRING "0.10")
+set(gridtools-verification_VERSION_STRING 
+    "${gridtools-verification_VERSION_MAJOR}.${gridtools-verification_VERSION_MINOR}.${gridtools-verification_VERSION_PATCH}")
 set(SERIALBOX_VERSION_REQUIRED "2.5.0")
 
 #----------------- CMake options
