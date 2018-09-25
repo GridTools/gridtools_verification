@@ -7,13 +7,18 @@ endif()
 include(FindPackageHandleStandardArgs)
 
 include(CMakeFindDependencyMacro)
-find_dependency(Serialbox "${SERIALBOX_VERSION_REQUIRED}" HINTS ${SERIALBOX_CMAKE})
-find_dependency(GTest HINTS ${GRIDTOOLS_VERIFICATION_ROOT}/lib64/cmake) #TODO fix this hard-coding
 
 set(Boost_NO_SYSTEM_PATHS ON)
 set(BOOST_INCLUDEDIR @Boost_INCLUDE_DIR@) # hint where to find boost
-find_dependency(Boost "@Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@.@Boost_SUBMINOR_VERSION@"
+
+# need find_package (not find_dependency) as we need to call find_package(Boost) again even if it was already
+# called by the user of this file in order to provide REQUIRED_BOOST_COMPONENTS
+find_package(Boost "@Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@.@Boost_SUBMINOR_VERSION@" REQUIRED
     COMPONENTS @REQUIRED_BOOST_COMPONENTS@)
+
+find_dependency(Serialbox "${SERIALBOX_VERSION_REQUIRED}" HINTS @PACKAGE_Serialbox_DIR@)
+
+find_dependency(GTest HINTS ${GRIDTOOLS_VERIFICATION_ROOT}/lib64/cmake) #TODO fix this hard-coding
 
 # Import library targets 
 include("${CMAKE_CURRENT_LIST_DIR}/gridtools_verificationTargets.cmake")
