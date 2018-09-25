@@ -34,15 +34,15 @@
   For information: http://eth-cscs.github.io/gridtools/
 */
 
+#include "helper_dycore.h"
+#include <cmath>
 #include <core.h>
 #include <core/serialization.h>
-#include <cmath>
-#include "helper_dycore.h"
 
 using namespace gt_verification;
 
 #ifdef HAS_GRIDTOOLS
-#include <gridtools.hpp>
+#include <gridtools/gridtools.hpp>
 /**
  * @brief Serialization unittest
  */

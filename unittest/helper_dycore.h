@@ -6,7 +6,7 @@
 
 #ifdef HAS_GRIDTOOLS
 
-#include <storage/storage-facility.hpp>
+#include <gridtools/storage/storage-facility.hpp>
 
 using Real = double;
 const int iMinusHaloSize = 3;

@@ -43,7 +43,6 @@
 #include "type_erased_field.h"
 #include <numeric>
 #include <serialbox/core/frontend/gridtools/Serializer.h>
-#include <storage/storage-facility.hpp>
 #include <string>
 
 namespace gt_verification {
@@ -219,10 +218,10 @@ namespace gt_verification {
             if (v.size() == 0)
                 return std::string("<empty-vector>");
             else
-                return std::accumulate(std::next(v.begin()),
-                    v.end(),
-                    std::string(std::to_string(v[0])),
-                    [](std::string s, int i) { return s + ", " + std::to_string(i); });
+                return std::accumulate(
+                    std::next(v.begin()), v.end(), std::string(std::to_string(v[0])), [](std::string s, int i) {
+                        return s + ", " + std::to_string(i);
+                    });
         }
 
         // FIXME: hack the mapping of killed dimension
@@ -249,4 +248,4 @@ namespace gt_verification {
             return result;
         }
     };
-}
+} // namespace gt_verification

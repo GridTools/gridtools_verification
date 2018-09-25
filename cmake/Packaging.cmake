@@ -1,9 +1,6 @@
 ## Handle Packaging
 include(CMakePackageConfigHelpers)
 
-set(GRIDTOOLS_VERIFICATION_INCLUDE_DIR include)
-set(GRIDTOOLS_VERIFICATION_LIBRARY_DIR lib)
-
 ## Generate and install GridtoolsVerificationConfig.cmake
 configure_package_config_file(
     ${CMAKE_SOURCE_DIR}/cmake/gridtools_verification-config.cmake.in
@@ -11,9 +8,7 @@ configure_package_config_file(
     INSTALL_DESTINATION
         cmake
     PATH_VARS
-        SERIALBOX_ROOT
-        GRIDTOOLS_VERIFICATION_INCLUDE_DIR
-        GRIDTOOLS_VERIFICATION_LIBRARY_DIR
+        Serialbox_DIR
 )
 install(FILES "${PROJECT_BINARY_DIR}/cmake/gridtools_verification-config.cmake" DESTINATION cmake)
 
