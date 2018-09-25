@@ -1,10 +1,3 @@
-function(add_unittest_executable name sources)
-    add_executable(${name} ${sources})
-    target_link_libraries(${name} 
-            gridtools_verification
-        )
-endfunction(add_unittest_executable)
-
 set(GT_VERIFICATION_TESTS
         "core/test_utility.cpp"
         "verification/test_error_metric.cpp"
@@ -13,12 +6,12 @@ set(GT_VERIFICATION_TESTS
         "test_serialization.cpp"
         )
 
-if( GRIDTOOLS_ROOT )
-  message( STATUS "GridTools is available: ${GRIDTOOLS_ROOT}/include" )
-  include_directories( ${GRIDTOOLS_ROOT}/include ) 
-  add_definitions(-DHAS_GRIDTOOLS)
-else()
-  message( FATAL_ERROR "No GridTools found!" )
-endif()
+add_executable(test_verification "${GT_VERIFICATION_TESTS}")
+target_link_libraries(test_verification gridtools_verification)
 
-add_unittest_executable( test_verification "${GT_VERIFICATION_TESTS}" )
+if( GRIDTOOLS_ROOT )
+    # GridTools is only need for some tests
+    message( STATUS "GridTools is available: ${GRIDTOOLS_ROOT}/include" )
+    target_include_directories(test_verification PRIVATE ${GRIDTOOLS_ROOT}/include)
+    target_compile_definitions(test_verification PRIVATE HAS_GRIDTOOLS)
+endif()

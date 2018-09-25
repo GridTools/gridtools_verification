@@ -36,13 +36,12 @@ target_include_directories( gridtools_verification
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     )
-target_link_libraries( gridtools_verification ${Boost_LIBRARIES} ) # TODO keyword PUBLIC/PRIVATE proplery
-#target_link_libraries( gridtools_verification googletest )
-#target_include_directories( gridtools_verification PUBLIC ${GTEST_INCLUDE_DIR})
-#message(STATUS "${GTEST_INCLUDE_DIR}")
-#target_link_libraries( gridtools_verification PUBLIC ${GTEST_LIBRARIES})
-target_link_libraries( gridtools_verification gtest_main gmock_main )
-target_link_libraries( gridtools_verification sbox::SerialboxCoreStatic )
-target_link_libraries( gridtools_verification pthread )
+    
+target_link_libraries( gridtools_verification PRIVATE Boost::program_options)
+target_link_libraries( gridtools_verification PRIVATE Boost::system)
+
+target_link_libraries( gridtools_verification PUBLIC gtest_main gmock_main )
+target_link_libraries( gridtools_verification PUBLIC Serialbox::SerialboxStatic )
+target_link_libraries( gridtools_verification PRIVATE pthread )
 
 install( TARGETS gridtools_verification DESTINATION "lib" EXPORT gridtools_verificationTargets )
