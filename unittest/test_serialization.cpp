@@ -42,7 +42,6 @@
 using namespace gt_verification;
 
 #ifdef HAS_GRIDTOOLS
-#include <gridtools/gridtools.hpp>
 /**
  * @brief Serialization unittest
  */
