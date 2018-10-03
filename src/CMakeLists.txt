@@ -42,6 +42,5 @@ target_link_libraries( gridtools_verification PRIVATE Boost::system)
 
 target_link_libraries( gridtools_verification PUBLIC gtest_main gmock_main )
 target_link_libraries( gridtools_verification PUBLIC Serialbox::SerialboxStatic )
-target_link_libraries( gridtools_verification PRIVATE pthread )
 
 install( TARGETS gridtools_verification DESTINATION "lib" EXPORT gridtools_verificationTargets )
