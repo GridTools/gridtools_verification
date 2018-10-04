@@ -10,6 +10,8 @@ set(gridtools-verification_VERSION_STRING
     "${gridtools-verification_VERSION_MAJOR}.${gridtools-verification_VERSION_MINOR}.${gridtools-verification_VERSION_PATCH}")
 set(SERIALBOX_VERSION_REQUIRED "2.5.0")
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 #----------------- CMake options
 # C++11 compiler support
 set(CMAKE_CXX_STANDARD 11)
