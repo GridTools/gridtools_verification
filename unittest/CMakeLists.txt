@@ -8,6 +8,7 @@ set(GT_VERIFICATION_TESTS
 
 add_executable(test_verification "${GT_VERIFICATION_TESTS}")
 target_link_libraries(test_verification gridtools_verification)
+target_link_libraries(test_verification Boost::boost)
 
 if( GRIDTOOLS_ROOT )
     # GridTools is only need for some tests
