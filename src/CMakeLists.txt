@@ -14,7 +14,6 @@ set(GT_VERIFICATION_SOURCES
     "verification/boundary_extent.h"
     "verification/error_metric_interface.h"
     "verification/error_metric.h"
-    "verification/field_collection.cpp"
     "verification/field_collection.h"
     "verification/main.h"
     "verification/unittest_environment.cpp"
