@@ -44,10 +44,9 @@ set( REQUIRED_BOOST_COMPONENTS ${SERIALBOX_REQUIRED_BOOST_COMPONENTS} program_op
 find_package( Boost ${SERIALBOX_BOOST_VERSION} REQUIRED ${REQUIRED_BOOST_COMPONENTS})
 
 #----------------- build Google Test
-# Since CMake has a problem with pthread when passed to nvcc.
-# (https://gitlab.kitware.com/cmake/cmake/issues/18008)
-set(gtest_disable_pthreads ON CACHE BOOL "" FORCE)
 add_subdirectory(libs/googletest)
+include(FindThreadsCudaFix)
+find_threads_cuda_fix()
 
 #----------------- build verification framework
 add_subdirectory(src)

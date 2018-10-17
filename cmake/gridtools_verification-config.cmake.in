@@ -22,6 +22,8 @@ find_dependency(Serialbox "${SERIALBOX_VERSION_REQUIRED}" HINTS @PACKAGE_Serialb
 
 find_dependency(GTest HINTS ${GRIDTOOLS_VERIFICATION_ROOT}/lib64/cmake) #TODO fix this hard-coding
 
+include(${CMAKE_CURRENT_LIST_DIR}/FindThreadsCudaFix.cmake)
+find_threads_cuda_fix()
 
 # Import library targets 
 include("${CMAKE_CURRENT_LIST_DIR}/gridtools_verificationTargets.cmake")

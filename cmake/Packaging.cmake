@@ -1,6 +1,8 @@
 ## Handle Packaging
 include(CMakePackageConfigHelpers)
 
+install(FILES "${CMAKE_CURRENT_LIST_DIR}/FindThreadsCudaFix.cmake" DESTINATION cmake)
+
 ## Generate and install GridtoolsVerificationConfig.cmake
 configure_package_config_file(
     ${CMAKE_SOURCE_DIR}/cmake/gridtools_verification-config.cmake.in
