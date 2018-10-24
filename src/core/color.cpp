@@ -77,7 +77,7 @@ namespace gt_verification {
                                      (strcmp(term, "screen-256color") == 0) || (strcmp(term, "rxvt-unicode") == 0) ||
                                      (strcmp(term, "rxvt-unicode-256color") == 0) || (strcmp(term, "linux") == 0) ||
                                      (strcmp(term, "cygwin") == 0) || (strcmp(term, "tmux") == 0) ||
-                                     (strcmp(term, "tmux-256color")));
+                                     (strcmp(term, "tmux-256color") == 0));
             }
             return boost::algorithm::iequals(useColor, "yes") || boost::algorithm::iequals(useColor, "true") ||
                    boost::algorithm::iequals(useColor, "t") || boost::algorithm::iequals(useColor, "1");
