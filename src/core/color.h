@@ -72,7 +72,7 @@ namespace gt_verification {
         /**
          * Check whether we can use colored output or not
          */
-        bool usecoloredOutput(FILE *stream);
+        bool useColoredOutput(FILE *stream);
     }
 
     /**
@@ -90,22 +90,22 @@ namespace gt_verification {
      */
     template < typename... Args >
     inline void cfprintf(FILE *stream, color color, const char *fmt, Args &&... args) {
-        if (internal::usecoloredOutput(stream))
+        if (internal::useColoredOutput(stream))
             std::fprintf(stream, "\033[0;%sm", internal::colorToVT100(color));
 
         std::fprintf(stream, fmt, args...);
 
-        if (internal::usecoloredOutput(stream))
+        if (internal::useColoredOutput(stream))
             std::fprintf(stream, "\033[m");
     }
 
     inline void cfprintf(FILE *stream, color color, const char *fmt) {
-        if (internal::usecoloredOutput(stream))
+        if (internal::useColoredOutput(stream))
             std::fprintf(stream, "\033[0;%sm", internal::colorToVT100(color));
 
         std::fputs(fmt, stream);
 
-        if (internal::usecoloredOutput(stream))
+        if (internal::useColoredOutput(stream))
             std::fprintf(stream, "\033[m");
     }
     /** @} */

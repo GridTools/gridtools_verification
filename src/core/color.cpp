@@ -35,6 +35,9 @@
 */
 #include "color.h"
 
+#include <boost/algorithm/string/predicate.hpp>
+#include <gtest/gtest.h>
+
 namespace gt_verification {
 
     namespace internal {
@@ -54,24 +57,34 @@ namespace gt_verification {
             }
         }
 
-        bool usecoloredOutput(FILE *stream) {
+        bool useColoredOutput(FILE *stream) {
 #ifndef DYCORE_NO_COLOR
-            int fd = fileno(stream);
-            bool isAtty = isatty(fd);
+            auto useColor = testing::GTEST_FLAG(color);
 
-            const char *const term = getenv("TERM");
+            if (boost::algorithm::iequals(useColor, "auto")) {
 
-            // It may happen that TERM is undefined, then just cross fingers
-            if (term == NULL)
-                return isAtty;
-            return isAtty && ((strcmp(term, "xterm") == 0) || (strcmp(term, "xterm-color") == 0) ||
-                                 (strcmp(term, "xterm-256color") == 0) || (strcmp(term, "screen") == 0) ||
-                                 (strcmp(term, "screen-256color") == 0) || (strcmp(term, "rxvt-unicode") == 0) ||
-                                 (strcmp(term, "rxvt-unicode-256color") == 0) || (strcmp(term, "linux") == 0) ||
-                                 (strcmp(term, "cygwin") == 0));
+                int fd = fileno(stream);
+                bool isAtty = isatty(fd);
+
+                const char *const term = getenv("TERM");
+
+                // It may happen that TERM is undefined, then just cross fingers
+                if (term == NULL)
+                    return isAtty;
+
+                return isAtty && ((strcmp(term, "xterm") == 0) || (strcmp(term, "xterm-color") == 0) ||
+                                     (strcmp(term, "xterm-256color") == 0) || (strcmp(term, "screen") == 0) ||
+                                     (strcmp(term, "screen-256color") == 0) || (strcmp(term, "rxvt-unicode") == 0) ||
+                                     (strcmp(term, "rxvt-unicode-256color") == 0) || (strcmp(term, "linux") == 0) ||
+                                     (strcmp(term, "cygwin") == 0) || (strcmp(term, "tmux") == 0) ||
+                                     (strcmp(term, "tmux-256color")));
+            }
+            return boost::algorithm::iequals(useColor, "yes") || boost::algorithm::iequals(useColor, "true") ||
+                   boost::algorithm::iequals(useColor, "t") || boost::algorithm::iequals(useColor, "1");
 #else
             return false;
 #endif
         }
-    }
-}
+
+    } // namespace internal
+} // namespace gt_verification
