@@ -36,9 +36,9 @@
 
 #include "helper_dycore.h"
 #include <cmath>
-#include <core.h>
-#include <core/serialization.h>
 #include <gridtools/common/defs.hpp>
+#include <gridtools_verification/core.h>
+#include <gridtools_verification/core/serialization.h>
 
 #include <gtest/gtest.h>
 

@@ -33,8 +33,8 @@
 
   For information: http://eth-cscs.github.io/gridtools/
 */
-#include <core/utility.h>
 #include <gmock/gmock.h>
+#include <gridtools_verification/core/utility.h>
 
 using namespace gt_verification;
 
