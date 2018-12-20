@@ -52,19 +52,7 @@ find_threads_cuda_fix()
 add_subdirectory(src)
 
 #----------------- install verification framework
-# building for development
-#option(GT_VERIFICATION_DEVELOPMENT "If enabled, headers will be installed as symlinks to the src directory, to allow IDEs to jump between files" OFF)
-#
-#if(NOT GT_VERIFICATION_DEVELOPMENT)
-  install( DIRECTORY src/ DESTINATION "include" FILES_MATCHING PATTERN "*.h" )
-#else()
-#  file(GLOB_RECURSE header_files RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}/src" "src/*.h")
-#  foreach(file ${header_files})
-#    get_filename_component(directory ${file} DIRECTORY)
-#    install(DIRECTORY DESTINATION include/gridtools_verification/${directory})
-#    install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/src/${file} ${CMAKE_INSTALL_PREFIX}/include/gridtools_verification/${file})")
-#  endforeach()
-#endif()
+install( DIRECTORY src/ DESTINATION "include" FILES_MATCHING PATTERN "*.h" )
 
 #----------------- packaging
 include(cmake/Packaging.cmake)
