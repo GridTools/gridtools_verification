@@ -35,11 +35,11 @@
 */
 // TODO recover test without dycore dependency
 
-#include <verification/field_collection.h>
-#include <verification/verification.h>
-#include <verification/verification_specification.h>
-#include <gmock/gmock.h>
 #include "../helper_dycore.h"
+#include <gmock/gmock.h>
+#include <gridtools_verification/verification/field_collection.h>
+#include <gridtools_verification/verification/verification.h>
+#include <gridtools_verification/verification/verification_specification.h>
 
 using namespace gt_verification;
 

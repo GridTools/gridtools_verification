@@ -34,15 +34,17 @@
   For information: http://eth-cscs.github.io/gridtools/
 */
 
-#include <core.h>
-#include <core/serialization.h>
-#include <cmath>
 #include "helper_dycore.h"
+#include <cmath>
+#include <gridtools/common/defs.hpp>
+#include <gridtools_verification/core.h>
+#include <gridtools_verification/core/serialization.h>
+
+#include <gtest/gtest.h>
 
 using namespace gt_verification;
 
 #ifdef HAS_GRIDTOOLS
-#include <gridtools.hpp>
 /**
  * @brief Serialization unittest
  */
@@ -120,7 +122,7 @@ TEST_F(SerializationUnittest, GridToolsToGridTools) {
     for (int i = 0; i < iSize; ++i)
         for (int j = 0; j < jSize; ++j)
             for (int k = 0; k < kSize; ++k)
-                ASSERT_REAL_EQ(view2(i, j, k), view1(i, j, k));
+                ASSERT_DOUBLE_EQ(view2(i, j, k), view1(i, j, k));
 }
 
 /**
@@ -180,7 +182,7 @@ TEST_F(SerializationUnittest, FortranToGridTools) {
     for (int k = 0; k < kSize; ++k)
         for (int j = 0; j < jSize; ++j)
             for (int i = 0; i < iSize; ++i)
-                ASSERT_REAL_EQ(view(i, j, k), fortranField[k * jSize * iSize + j * iSize + i]);
+                ASSERT_DOUBLE_EQ(view(i, j, k), fortranField[k * jSize * iSize + j * iSize + i]);
 }
 
 #endif

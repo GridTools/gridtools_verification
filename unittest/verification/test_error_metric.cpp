@@ -33,8 +33,8 @@
 
   For information: http://eth-cscs.github.io/gridtools/
 */
-#include <verification/error_metric.h>
 #include <gmock/gmock.h>
+#include <gridtools_verification/verification/error_metric.h>
 
 TEST(error_metric, clear_separation) {
     gt_verification::error_metric< float > em1(1.e-6, 1e-8);

@@ -6,7 +6,7 @@
 
 #ifdef HAS_GRIDTOOLS
 
-#include <storage/storage-facility.hpp>
+#include <gridtools/storage/storage-facility.hpp>
 
 using Real = double;
 const int iMinusHaloSize = 3;
@@ -17,9 +17,9 @@ const int jPlusHaloSize = 3;
 namespace {
 
 #ifdef DYCORE_USE_GPU
-    using StorageTraitsType = gridtools::storage_traits< gridtools::platform::cuda >;
+    using StorageTraitsType = gridtools::storage_traits< gridtools::target::cuda >;
 #else
-    using StorageTraitsType = gridtools::storage_traits< gridtools::platform::x86 >;
+    using StorageTraitsType = gridtools::storage_traits< gridtools::target::x86 >;
 #endif
 
     using IJHaloType = gridtools::halo< iMinusHaloSize, jMinusHaloSize, 0 >;
