@@ -17,9 +17,9 @@ const int jPlusHaloSize = 3;
 namespace {
 
 #ifdef DYCORE_USE_GPU
-    using StorageTraitsType = gridtools::storage_traits< gridtools::target::cuda >;
+    using StorageTraitsType = gridtools::storage_traits< gridtools::backend::cuda >;
 #else
-    using StorageTraitsType = gridtools::storage_traits< gridtools::target::x86 >;
+    using StorageTraitsType = gridtools::storage_traits< gridtools::backend::x86 >;
 #endif
 
     using IJHaloType = gridtools::halo< iMinusHaloSize, jMinusHaloSize, 0 >;
