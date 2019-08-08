@@ -35,23 +35,77 @@
 */
 #pragma once
 
-#include <vector>
-#include <string>
+#include "../common.h"
+#include "../core/color.h"
+#include "../core/command_line.h"
+#include "../core/error.h"
+#include "../core/include_boost_format.h"
+#include "../core/utility.h"
+#include "verification.h"
+#include "verification_specification.h"
 #include <cstdint>
 #include <cstdlib>
 #include <initializer_list>
 #include <limits>
 #include <numeric>
-#include "../core/include_boost_format.h"
-#include "../common.h"
-#include "verification_specification.h"
-#include "verification.h"
-#include "../core/color.h"
-#include "../core/command_line.h"
-#include "../core/error.h"
-#include "../core/utility.h"
+#include <string>
+#include <vector>
 
 namespace gt_verification {
+
+    class error_layer {
+      public:
+        template < typename failures_t >
+        error_layer(int size_i, int size_j, failures_t const &failures)
+            : size_i_{size_i}, size_j_{size_j}, error_mask_(size_i * size_j, false) {
+
+            for (auto const &failure : failures) {
+                mark(failure.i, failure.j);
+            }
+        }
+
+        bool get(int i, int j) const { return error_mask_[i * size_j_ + j]; }
+        int size_i() const { return size_i_; }
+        int size_j() const { return size_j_; }
+
+      private:
+        int size_i_;
+        int size_j_;
+        std::vector< bool > error_mask_;
+
+        void mark(int i, int j) { error_mask_[i * size_j_ + j] = true; }
+    };
+
+    // Print a layer
+    template < typename failures_t >
+    void printLayer(error_layer const &layer, failures_t const &failures) {
+        // First failure in this layer (this is used to print some (i,j,k) triplets
+        // on the right hand side)
+        auto it = failures.cbegin();
+
+        for (int i = 0; i < layer.size_i(); ++i) {
+            // Print left side of the row (arrow in i-direction)
+            if (i < 4)
+                std::printf(i == 3 ? "   v " : (i == 1 ? " i | " : "   | "));
+            else
+                std::printf("     ");
+
+            // Print a row (in color)
+            for (int j = 0; j < layer.size_j(); ++j)
+                if (layer.get(i, j))
+                    cprintf(color::RED, "X ");
+                else
+                    cprintf(color::GREEN, "X ");
+
+            // Print right hand side
+            if (it != failures.cend()) {
+                std::printf(" (%3i,%3i,%3i)\n", it->i, it->j, it->k);
+                ++it;
+            } else
+                std::printf("\n");
+        }
+        std::printf("\n");
+    };
 
     /**
      * @brief Report errors to console
@@ -108,71 +162,22 @@ namespace gt_verification {
             } else
                 kInterval = verifSpec_.k_interval();
 
-            // The boolean vector of the current layer (true == failure)
-            const int N = referenceField.i_size();
-            const int M = referenceField.j_size();
-            std::vector< bool > layer(N * M, false);
-            int layerK = -1;
-
-            // Print a layer (given by index k)
-            auto printLayer = [&](int k) {
-                // Search for the first failure in this layer (this is used to print some (i,j,k) triplets
-                // on the right hand side)
-                auto it = failures.cbegin();
-                while (it != failures.cend() && it->k != k)
-                    ++it;
-
-                std::printf("\nk = %i (%s)\n\n       j\n   0-------->\n", k, outputField.name().c_str());
-                for (int i = 0; i < N; ++i) {
-                    // Print left side of the row (arrow in i-direction)
-                    if (i < 4)
-                        std::printf(i == 3 ? "   v " : (i == 1 ? " i | " : "   | "));
-                    else
-                        std::printf("     ");
-
-                    // Print a row (in color)
-                    for (int j = 0; j < M; ++j)
-                        if (layer[i * M + j])
-                            cprintf(color::RED, "X ");
-                        else
-                            cprintf(color::GREEN, "X ");
-
-                    // Print right hand side
-                    if (it != failures.cend() && (it->k == k)) {
-                        std::printf(" (%3i,%3i,%3i)\n", it->i, it->j, it->k);
-                        ++it;
-                    } else
-                        std::printf("\n");
-                }
-                std::printf("\n");
-            };
-
-            auto failureIt = failures.cbegin();
-            bool hasError = false;
-
             // Iterate over the specified layers (k-direction)
             for (auto k : kInterval) {
-                for (; failureIt != failures.cend(); ++failureIt) {
-                    if (failureIt->k == k) {
-                        layer[failureIt->i * M + failureIt->j] = true;
-                        layerK = k;
-                        hasError = true;
-                    } else if (failureIt->k > k) {
-                        if (hasError) {
-                            // Print the layer & reset it
-                            printLayer(layerK);
-                            std::fill(layer.begin(), layer.end(), false);
-                            hasError = false;
-                        }
-                        break;
-                    }
+
+                std::vector< typename gt_verification::verification< T >::failure > k_failures;
+                std::copy_if(failures.cbegin(),
+                    failures.cend(),
+                    std::back_inserter(k_failures),
+                    [k](typename gt_verification::verification< T >::failure const &f) { return f.k == k; });
+
+                if (k_failures.size() > 0) {
+                    error_layer layer{referenceField.i_size(), referenceField.j_size(), k_failures};
+
+                    std::printf("\nk = %i (%s)\n\n       j\n   0-------->\n", k, outputField.name().c_str());
+                    printLayer(layer, k_failures);
                 }
             }
-
-            // In case only one layer has an error, we never go into the else if branch, hence we print it
-            // here
-            if (hasError)
-                printLayer(layerK);
         }
 
       public:
@@ -204,4 +209,4 @@ namespace gt_verification {
       private:
         verification_specification verifSpec_;
     };
-}
+} // namespace gt_verification
