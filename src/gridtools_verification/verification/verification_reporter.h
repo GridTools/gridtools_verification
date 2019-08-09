@@ -78,7 +78,9 @@ namespace gt_verification {
 
     // Print a layer
     template < typename failures_t >
-    void printLayer(error_layer const &layer, failures_t const &failures) {
+    void printLayer(error_layer const &layer, failures_t const &failures, int k, std::string const &field_name) {
+        std::printf("\nk = %i (%s)\n\n       j\n   0-------->\n", k, field_name.c_str());
+
         // First failure in this layer (this is used to print some (i,j,k) triplets
         // on the right hand side)
         auto it = failures.cbegin();
@@ -173,9 +175,7 @@ namespace gt_verification {
 
                 if (k_failures.size() > 0) {
                     error_layer layer{referenceField.i_size(), referenceField.j_size(), k_failures};
-
-                    std::printf("\nk = %i (%s)\n\n       j\n   0-------->\n", k, outputField.name().c_str());
-                    printLayer(layer, k_failures);
+                    printLayer(layer, k_failures, k, outputField.name());
                 }
             }
         }
