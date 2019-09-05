@@ -35,12 +35,12 @@
 */
 #pragma once
 
-#include <type_traits>
-#include <utility>
-#include <memory>
+#include "../common.h"
 #include <boost/mpl/bool.hpp>
 #include <boost/type_traits.hpp>
-#include "../common.h"
+#include <memory>
+#include <type_traits>
+#include <utility>
 
 namespace gt_verification {
 
@@ -176,6 +176,7 @@ namespace gt_verification {
                     for (int j = 0; j < jSize; ++j)
                         for (int k = 0; k < kSize; ++k)
                             dst(i, j, k) = src(i, j, k);
+                field.sync();
             }
 
             const T &access(int i, int j, int k) const noexcept override { return make_host_view(field_)(i, j, k); }
@@ -451,4 +452,4 @@ namespace gt_verification {
       private:
         std::shared_ptr< internal::type_erased_field_interface< T > > base_;
     };
-}
+} // namespace gt_verification
