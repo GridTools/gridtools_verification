@@ -30,12 +30,12 @@ set(GT_VERIFICATION_SOURCES
     )
 
 add_library( gridtools_verification ${GT_VERIFICATION_SOURCES} )
-target_include_directories( gridtools_verification 
+target_include_directories( gridtools_verification
     PUBLIC
         $<INSTALL_INTERFACE:include>
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     )
-    
+
 target_link_libraries( gridtools_verification PRIVATE Boost::program_options)
 target_link_libraries( gridtools_verification PRIVATE Boost::system)
 

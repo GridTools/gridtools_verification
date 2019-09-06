@@ -48,9 +48,9 @@ namespace gt_verification {
         return (*instance_);
     }
 
-    logger::logger() : flushed_(true), outStream_(std::clog), enable_(false) {
+    logger::logger() : enable_(false), flushed_(true), outStream_(std::clog) {
         // Check environment variable
         const char *envDycoreLog = std::getenv("VERIFICATION_LOG"); // FIXME
         enable_ = envDycoreLog && (std::atoi(envDycoreLog) > 0);
     }
-}
+} // namespace gt_verification

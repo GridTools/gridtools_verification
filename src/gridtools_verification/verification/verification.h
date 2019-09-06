@@ -42,13 +42,13 @@
  */
 #pragma once
 
-#include <vector>
-#include "../core/include_boost_format.h"
 #include "../common.h"
+#include "../core/include_boost_format.h"
 #include "../core/type_erased_field.h"
 #include "boundary_extent.h"
 #include "error_metric.h"
 #include "verification_result.h"
+#include <vector>
 
 namespace gt_verification {
 
@@ -97,9 +97,8 @@ namespace gt_verification {
          * @return VerificationResult
          */
         verification_result verify(const error_metric_interface< T > &error_metric) noexcept {
-            // Sync fields with Host
+            // Sync field with Host
             outputField_.sync();
-            referenceField_.sync();
 
             failures_.clear();
 
@@ -130,6 +129,8 @@ namespace gt_verification {
                     for (int i = boundary_.i_minus(); i < (iSizeOut + boundary_.i_plus()); ++i)
                         if (!error_metric.equal(outputField_(i, j, k), referenceField_(i, j, k)))
                             failures_.push_back(failure{i, j, k, outputField_(i, j, k), referenceField_(i, j, k)});
+
+            outputField_.sync();
 
             if (failures_.empty())
                 return verification_result(true, "");
@@ -186,4 +187,4 @@ namespace gt_verification {
 
         std::vector< failure > failures_;
     };
-}
+} // namespace gt_verification
